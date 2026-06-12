@@ -1,0 +1,1434 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=JetBrains+Mono:wght@400;500&display=swap">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { overflow: hidden; background: #000; }
+
+    :root {
+      --bg: #000000; --surface: #0f0f10; --surface2: #1a1a1c; --surface3: #252527;
+      --border: #282829; --border-faint: #1c1c1e;
+      --text: #f5f5f7; --text-muted: #86868b; --text-faint: #3d3d40;
+      --accent: #0071e3; --accent-dim: rgba(0,113,227,0.13); --accent-text: #2997ff;
+      --success: #30d158; --success-dim: rgba(48,209,88,0.12);
+      --warning: #ff9f0a; --warning-dim: rgba(255,159,10,0.12);
+      --error: #ff453a; --error-dim: rgba(255,69,58,0.12);
+      --offer: #bf5af2; --offer-dim: rgba(191,90,242,0.12);
+    }
+    [data-theme="slate"] {
+      --bg: #0d1117; --surface: #161b22; --surface2: #21262d; --surface3: #2d333b;
+      --border: #30363d; --border-faint: #21262d;
+      --text: #f0f6fc; --text-muted: #8b949e; --text-faint: #484f58;
+      --accent: #58a6ff; --accent-dim: rgba(88,166,255,0.13); --accent-text: #79c0ff;
+      --success: #3fb950; --success-dim: rgba(63,185,80,0.12);
+      --warning: #d29922; --warning-dim: rgba(210,153,34,0.12);
+      --error: #f85149; --error-dim: rgba(248,81,73,0.12);
+      --offer: #bc8cff; --offer-dim: rgba(188,140,255,0.12);
+    }
+
+    ::-webkit-scrollbar { width: 4px; height: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    .nav-item {
+      display: flex; align-items: center; gap: 9px; padding: 8px 10px; border-radius: 7px;
+      cursor: pointer; color: var(--text-muted); font-family: 'DM Sans', sans-serif;
+      font-size: 13.5px; font-weight: 400; border-left: 2px solid transparent;
+      margin-bottom: 1px; transition: color 0.12s, background 0.12s; user-select: none;
+    }
+    .nav-item:hover { background: var(--surface2); color: var(--text); }
+    .nav-item[data-active="true"] { background: var(--accent-dim); color: var(--text); border-left-color: var(--accent); font-weight: 500; }
+
+    .score-badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: 2px 9px; border-radius: 20px; font-size: 11.5px; font-weight: 700;
+      font-family: 'Space Grotesk', sans-serif; min-width: 40px;
+    }
+    .score-badge[data-level="high"] { background: var(--success-dim); color: var(--success); }
+    .score-badge[data-level="mid"]  { background: var(--warning-dim); color: var(--warning); }
+    .score-badge[data-level="low"]  { background: var(--error-dim);   color: var(--error);   }
+
+    .status-badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: 2px 10px; border-radius: 20px; font-size: 11.5px; font-weight: 500;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .status-badge[data-status="Applied"]   { background: var(--accent-dim);  color: var(--accent-text); }
+    .status-badge[data-status="Interview"] { background: var(--warning-dim); color: var(--warning); }
+    .status-badge[data-status="Offer"]     { background: var(--offer-dim);   color: var(--offer); }
+    .status-badge[data-status="Rejected"]  { background: var(--error-dim);   color: var(--error); }
+
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+      padding: 9px 18px; border-radius: 8px; font-size: 13.5px; font-weight: 500;
+      font-family: 'DM Sans', sans-serif; cursor: pointer; border: none;
+      transition: all 0.13s ease; letter-spacing: -0.1px; white-space: nowrap; text-wrap: nowrap;
+    }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover { filter: brightness(1.12); }
+    .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+    .btn-secondary:hover { background: var(--surface3); }
+    .btn-ghost { background: transparent; color: var(--text-muted); }
+    .btn-ghost:hover { color: var(--text); background: var(--surface2); }
+    .btn-danger { background: var(--error-dim); color: var(--error); }
+    .btn-danger:hover { background: rgba(255,69,58,0.2); }
+    .btn-success-soft { background: var(--success-dim); color: var(--success); }
+    .btn-success-soft:hover { background: rgba(48,209,88,0.2); }
+    .btn-sm  { padding: 6px 14px; font-size: 12.5px; border-radius: 7px; gap: 6px; }
+    .btn-xs  { padding: 4px 10px; font-size: 11.5px; border-radius: 6px; gap: 5px; }
+
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    .stat-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+      padding: 22px 24px; transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .stat-card:hover { transform: translateY(-1px); box-shadow: 0 8px 28px rgba(0,0,0,0.45); }
+
+    .form-input {
+      width: 100%; padding: 9px 12px; border-radius: 8px;
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text); font-size: 13.5px; font-family: 'DM Sans', sans-serif;
+      outline: none; transition: border-color 0.13s; -webkit-appearance: none; appearance: none;
+    }
+    .form-input:focus { border-color: var(--accent); }
+    .form-input::placeholder { color: var(--text-faint); }
+    textarea.form-input { resize: vertical; min-height: 80px; line-height: 1.6; }
+    select.form-input {
+      cursor: pointer; padding-right: 28px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2386868b' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 10px center;
+    }
+    .form-label {
+      display: block; font-size: 11.5px; font-weight: 600; font-family: 'DM Sans', sans-serif;
+      color: var(--text-muted); margin-bottom: 6px;
+    }
+
+    .data-table { width: 100%; border-collapse: collapse; }
+    .data-table th {
+      padding: 10px 16px; text-align: left; font-size: 10.5px; font-weight: 600;
+      font-family: 'DM Sans', sans-serif; color: var(--text-faint);
+      letter-spacing: 0.9px; text-transform: uppercase;
+      border-bottom: 1px solid var(--border); background: var(--surface2);
+    }
+    .data-table td {
+      padding: 13px 16px; border-bottom: 1px solid var(--border-faint);
+      font-size: 13.5px; font-family: 'DM Sans', sans-serif; color: var(--text); vertical-align: middle;
+    }
+    .data-table tbody tr { cursor: pointer; transition: background 0.1s; }
+    .data-table tbody tr:hover td { background: var(--surface2); }
+    .data-table tbody tr:last-child td { border-bottom: none; }
+
+    .follow-row[data-overdue="true"] td { background: rgba(255,69,58,0.04); }
+    .follow-row[data-overdue="true"] td:first-child { border-left: 2px solid var(--error); padding-left: 14px; }
+
+    .kw-chip {
+      display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px;
+      border-radius: 20px; font-size: 12px; font-family: 'DM Sans', sans-serif; font-weight: 500;
+    }
+    .kw-chip[data-type="positive"] { background: var(--success-dim); color: var(--success); }
+    .kw-chip[data-type="negative"] { background: var(--error-dim);   color: var(--error);   }
+    .kw-chip-x { cursor: pointer; opacity: 0.55; font-size: 15px; line-height: 1; font-weight: 300; }
+    .kw-chip-x:hover { opacity: 1; }
+
+    .toggle-track {
+      width: 38px; height: 22px; border-radius: 11px; border: none; cursor: pointer;
+      transition: background 0.2s; position: relative; flex-shrink: 0; background: var(--surface3);
+    }
+    .toggle-track::after {
+      content: ''; position: absolute; width: 16px; height: 16px;
+      background: var(--text-muted); border-radius: 50%; top: 3px; left: 3px; transition: all 0.2s;
+    }
+    .toggle-track[data-on="true"] { background: var(--success); }
+    .toggle-track[data-on="true"]::after { left: 19px; background: #fff; }
+
+    .var-card {
+      border: 1.5px solid var(--border); border-radius: 12px; padding: 18px 20px;
+      cursor: pointer; transition: all 0.15s; background: transparent;
+    }
+    .var-card:hover { border-color: var(--text-faint); }
+    .var-card[data-active="true"] { border-color: var(--accent); background: var(--accent-dim); }
+
+    .pipeline-row {
+      display: flex; align-items: center; gap: 14px; padding: 14px 20px;
+      border-bottom: 1px solid var(--border-faint); transition: background 0.1s;
+    }
+    .pipeline-row:hover { background: var(--surface2); }
+    .pipeline-row:last-child { border-bottom: none; }
+
+    .scan-row {
+      display: flex; align-items: center; gap: 14px; padding: 14px 20px;
+      border-bottom: 1px solid var(--border-faint); transition: background 0.1s;
+    }
+    .scan-row:hover { background: var(--surface2); }
+    .scan-row:last-child { border-bottom: none; }
+
+    .modal-bg {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.75);
+      display: flex; align-items: center; justify-content: center; z-index: 200;
+      animation: fadeUp 0.15s ease;
+    }
+    .modal-box {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+      padding: 28px 30px; width: 480px; max-width: 95vw; animation: fadeUp 0.18s ease;
+    }
+
+    .toast-pill {
+      position: fixed; bottom: 26px; right: 26px; z-index: 300;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-left: 3px solid var(--success); border-radius: 10px;
+      padding: 12px 18px; font-size: 13.5px; font-family: 'DM Sans', sans-serif;
+      color: var(--text); animation: fadeUp 0.18s ease;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    }
+
+    .search-wrap { position: relative; }
+    .search-wrap svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-faint); pointer-events: none; }
+    .search-wrap .form-input { padding-left: 34px; }
+
+    .cv-rendered h1 { font-family: 'Space Grotesk',sans-serif; font-size: 21px; font-weight: 700; color: var(--text); margin: 0 0 3px; letter-spacing: -0.3px; }
+    .cv-rendered h2 { font-family: 'DM Sans',sans-serif; font-size: 10px; font-weight: 700; color: var(--accent-text); letter-spacing: 1.1px; text-transform: uppercase; margin: 20px 0 8px; padding-bottom: 7px; border-bottom: 1px solid var(--border); }
+    .cv-rendered h3 { font-family: 'DM Sans',sans-serif; font-size: 13.5px; font-weight: 600; color: var(--text); margin: 14px 0 3px; }
+    .cv-rendered p  { font-family: 'DM Sans',sans-serif; font-size: 13px; color: var(--text-muted); margin: 3px 0; line-height: 1.6; }
+    .cv-rendered li { font-family: 'DM Sans',sans-serif; font-size: 13px; color: var(--text-muted); margin: 3px 0 3px 18px; line-height: 1.55; list-style: disc; }
+    .cv-rendered strong { color: var(--text); font-weight: 600; }
+    .cv-rendered hr { border: none; border-top: 1px solid var(--border); margin: 12px 0; }
+    .cv-rendered code { font-family: 'JetBrains Mono',monospace; font-size: 11px; background: var(--surface2); padding: 1px 5px; border-radius: 3px; color: var(--accent-text); }
+
+    .view-wrap { animation: fadeUp 0.2s ease both; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</helmet>
+
+<!-- ROOT -->
+<div data-theme="{{ theme }}" style="display:flex; height:100vh; overflow:hidden; background:var(--bg); font-family:'DM Sans',sans-serif;">
+
+  <!-- ═══ SIDEBAR ═══ -->
+  <aside style="width:224px; min-width:224px; height:100vh; overflow-y:auto; display:flex; flex-direction:column; background:var(--surface); border-right:1px solid var(--border); flex-shrink:0;">
+
+    <!-- Logo -->
+    <div style="padding:22px 18px 18px; border-bottom:1px solid var(--border); flex-shrink:0;">
+      <div style="display:flex; align-items:center; gap:11px;">
+        <div style="width:36px; height:36px; background:var(--accent); border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+        </div>
+        <div>
+          <div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:15.5px; color:var(--text); letter-spacing:-0.5px;">career-ops</div>
+          <div style="font-size:10px; color:var(--text-faint); letter-spacing:0.7px; text-transform:uppercase; margin-top:1px;">Job Search Pipeline</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Nav -->
+    <nav style="flex:1; padding:8px 10px 10px; overflow-y:auto;">
+
+      <div style="font-family:'DM Sans',sans-serif; font-size:10px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:var(--text-faint); padding:10px 10px 4px;">Workspace</div>
+
+      <div class="nav-item" data-active="{{ isDashboard }}" onClick="{{ goDashboard }}">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect></svg>
+        <span>Dashboard</span>
+      </div>
+
+      <div class="nav-item" data-active="{{ isApplications }}" onClick="{{ goApplications }}">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+        <span>Applications</span>
+        <span style="margin-left:auto; background:var(--accent-dim); color:var(--accent-text); font-size:10px; font-weight:700; padding:1px 7px; border-radius:10px;">{{ totalApps }}</span>
+      </div>
+
+      <div class="nav-item" data-active="{{ isPipeline }}" onClick="{{ goPipeline }}">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 8 12 12 14 14"></polyline></svg>
+        <span>Pipeline</span>
+        <span style="margin-left:auto; background:var(--warning-dim); color:var(--warning); font-size:10px; font-weight:700; padding:1px 7px; border-radius:10px;">{{ pipelineCount }}</span>
+      </div>
+
+      <div class="nav-item" data-active="{{ isScan }}" onClick="{{ goScan }}">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <span>Scan Jobs</span>
+      </div>
+
+      <div style="font-family:'DM Sans',sans-serif; font-size:10px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:var(--text-faint); padding:14px 10px 4px;">Tracking</div>
+
+      <div class="nav-item" data-active="{{ isFollowups }}" onClick="{{ goFollowups }}">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+        <span>Follow-ups</span>
+        <sc-if value="{{ hasOverdue }}" hint-placeholder-val="{{ false }}">
+          <span style="margin-left:auto; background:var(--error-dim); color:var(--error); font-size:10px; font-weight:700; padding:1px 7px; border-radius:10px;">{{ overdueCount }}</span>
+        </sc-if>
+      </div>
+
+      <div style="font-family:'DM Sans',sans-serif; font-size:10px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:var(--text-faint); padding:14px 10px 4px;">Documents</div>
+
+      <div class="nav-item" data-active="{{ isCv }}" onClick="{{ goCv }}">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+        <span>CV Editor</span>
+      </div>
+
+      <div class="nav-item" data-active="{{ isCover }}" onClick="{{ goCover }}">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+        <span>Cover Letter</span>
+      </div>
+
+      <div style="font-family:'DM Sans',sans-serif; font-size:10px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:var(--text-faint); padding:14px 10px 4px;">Config</div>
+
+      <div class="nav-item" data-active="{{ isProfile }}" onClick="{{ goProfile }}">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+        <span>Profile</span>
+      </div>
+
+      <div class="nav-item" data-active="{{ isPortals }}" onClick="{{ goPortals }}">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"></path></svg>
+        <span>Portals</span>
+      </div>
+
+    </nav>
+
+    <!-- Bottom -->
+    <div style="padding:14px 12px; border-top:1px solid var(--border); flex-shrink:0;">
+      <div style="margin-bottom:12px;">
+        <div style="font-size:10px; font-weight:600; letter-spacing:0.8px; text-transform:uppercase; color:var(--text-faint); font-family:'DM Sans',sans-serif; margin-bottom:7px; padding:0 1px;">Design Variation</div>
+        <div style="display:flex; gap:5px;">
+          <button class="var-card" data-active="{{ varAActive }}" onClick="{{ setObsidian }}" style="flex:1; text-align:center; font-size:11.5px; font-family:'DM Sans',sans-serif; font-weight:500; color:var(--text); padding:6px 8px; border-radius:8px;">Obsidian</button>
+          <button class="var-card" data-active="{{ varBActive }}" onClick="{{ setSlate }}"    style="flex:1; text-align:center; font-size:11.5px; font-family:'DM Sans',sans-serif; font-weight:500; color:var(--text); padding:6px 8px; border-radius:8px;">Slate</button>
+        </div>
+      </div>
+      <div style="display:flex; align-items:center; gap:10px; padding:10px; border-radius:9px; background:var(--surface2); cursor:pointer;" onClick="{{ goProfile }}">
+        <div style="width:32px; height:32px; border-radius:50%; background:var(--accent); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; color:#fff; font-family:'Space Grotesk',sans-serif; flex-shrink:0;">{{ profileInitial }}</div>
+        <div style="overflow:hidden; min-width:0;">
+          <div style="font-size:13px; font-weight:500; color:var(--text); font-family:'DM Sans',sans-serif; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ savedProfile.name }}</div>
+          <div style="font-size:11px; color:var(--text-faint); font-family:'DM Sans',sans-serif; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ savedProfile.location }}</div>
+        </div>
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- ═══ MAIN ═══ -->
+  <main style="flex:1; height:100vh; overflow-y:auto; background:var(--bg); min-width:0;">
+
+    <!-- ── DASHBOARD ── -->
+    <sc-if value="{{ isDashboard }}" hint-placeholder-val="{{ true }}">
+      <div class="view-wrap" style="padding:36px 40px; max-width:1160px;">
+
+        <div style="margin-bottom:32px;">
+          <h1 style="font-family:'Space Grotesk',sans-serif; font-size:28px; font-weight:700; color:var(--text); letter-spacing:-0.6px; margin:0 0 6px;">Good morning, {{ profileFirstName }}</h1>
+          <p style="font-size:14px; color:var(--text-muted); font-family:'DM Sans',sans-serif; margin:0;">Your job search at a glance — {{ statsTotal }} applications tracked.</p>
+        </div>
+
+        <!-- Stats row -->
+        <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:24px;">
+          <div class="stat-card">
+            <div style="font-size:10.5px; font-weight:600; letter-spacing:0.9px; text-transform:uppercase; color:var(--text-faint); font-family:'DM Sans',sans-serif; margin-bottom:12px;">Total</div>
+            <div style="font-family:'Space Grotesk',sans-serif; font-size:42px; font-weight:700; color:var(--text); letter-spacing:-2px; line-height:1;">{{ statsTotal }}</div>
+            <div style="font-size:12px; color:var(--text-muted); font-family:'DM Sans',sans-serif; margin-top:6px;">Applications</div>
+          </div>
+          <div class="stat-card">
+            <div style="font-size:10.5px; font-weight:600; letter-spacing:0.9px; text-transform:uppercase; color:var(--text-faint); font-family:'DM Sans',sans-serif; margin-bottom:12px;">Interview</div>
+            <div style="font-family:'Space Grotesk',sans-serif; font-size:42px; font-weight:700; color:var(--warning); letter-spacing:-2px; line-height:1;">{{ statsInterview }}</div>
+            <div style="font-size:12px; color:var(--text-muted); font-family:'DM Sans',sans-serif; margin-top:6px;">Active rounds</div>
+          </div>
+          <div class="stat-card">
+            <div style="font-size:10.5px; font-weight:600; letter-spacing:0.9px; text-transform:uppercase; color:var(--text-faint); font-family:'DM Sans',sans-serif; margin-bottom:12px;">Offer</div>
+            <div style="font-family:'Space Grotesk',sans-serif; font-size:42px; font-weight:700; color:var(--offer); letter-spacing:-2px; line-height:1;">{{ statsOffer }}</div>
+            <div style="font-size:12px; color:var(--text-muted); font-family:'DM Sans',sans-serif; margin-top:6px;">Pending decisions</div>
+          </div>
+          <div class="stat-card">
+            <div style="font-size:10.5px; font-weight:600; letter-spacing:0.9px; text-transform:uppercase; color:var(--text-faint); font-family:'DM Sans',sans-serif; margin-bottom:12px;">Pipeline</div>
+            <div style="font-family:'Space Grotesk',sans-serif; font-size:42px; font-weight:700; color:var(--accent-text); letter-spacing:-2px; line-height:1;">{{ pipelineCount }}</div>
+            <div style="font-size:12px; color:var(--text-muted); font-family:'DM Sans',sans-serif; margin-top:6px;">Pending evaluation</div>
+          </div>
+        </div>
+
+        <!-- Score + Recent -->
+        <div style="display:grid; grid-template-columns:290px 1fr; gap:16px; margin-bottom:22px;">
+          <div class="card" style="padding:22px 22px 18px;">
+            <div style="font-family:'Space Grotesk',sans-serif; font-size:14px; font-weight:600; color:var(--text); margin-bottom:16px;">Score Distribution</div>
+            {{ histogramEl }}
+          </div>
+          <div class="card">
+            <div style="padding:16px 20px 13px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--border);">
+              <span style="font-family:'Space Grotesk',sans-serif; font-size:14px; font-weight:600; color:var(--text);">Recent Applications</span>
+              <button class="btn btn-ghost btn-sm" onClick="{{ goApplications }}">View all →</button>
+            </div>
+            <table class="data-table">
+              <thead><tr><th>Company</th><th>Role</th><th>Score</th><th>Status</th></tr></thead>
+              <tbody>
+                <sc-for list="{{ recentApps }}" as="app" hint-placeholder-count="5">
+                  <tr onClick="{{ app.clickHandler }}">
+                    <td style="font-weight:600;">{{ app.company }}</td>
+                    <td style="color:var(--text-muted); max-width:210px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ app.role }}</td>
+                    <td><span class="score-badge" data-level="{{ app.scoreLevel }}">{{ app.score }}</span></td>
+                    <td><span class="status-badge" data-status="{{ app.status }}">{{ app.status }}</span></td>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Overdue alert -->
+        <sc-if value="{{ hasOverdue }}" hint-placeholder-val="{{ false }}">
+          <div style="background:var(--error-dim); border:1px solid rgba(255,69,58,0.17); border-radius:10px; padding:15px 20px; display:flex; align-items:center; gap:14px; margin-bottom:22px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--error)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+            <div>
+              <div style="font-size:13.5px; font-weight:600; color:var(--error); font-family:'DM Sans',sans-serif;">{{ overdueLabel }}</div>
+              <div style="font-size:12.5px; color:var(--text-muted); font-family:'DM Sans',sans-serif; margin-top:2px;">Some follow-ups need your attention.</div>
+            </div>
+            <button class="btn btn-danger btn-sm" style="margin-left:auto;" onClick="{{ goFollowups }}">Review Follow-ups</button>
+          </div>
+        </sc-if>
+
+        <!-- Design Variations -->
+        <div>
+          <div style="font-family:'Space Grotesk',sans-serif; font-size:14px; font-weight:600; color:var(--text); margin-bottom:12px;">Design Variations</div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+            <div class="var-card" data-active="{{ varAActive }}" onClick="{{ setObsidian }}">
+              <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+                <span style="font-family:'Space Grotesk',sans-serif; font-size:14px; font-weight:600; color:var(--text);">Variation A — Obsidian</span>
+                <sc-if value="{{ isObsidian }}" hint-placeholder-val="{{ true }}">
+                  <span style="font-size:10px; font-weight:700; font-family:'DM Sans',sans-serif; background:var(--accent-dim); color:var(--accent-text); padding:2px 8px; border-radius:10px;">Active</span>
+                </sc-if>
+              </div>
+              <p style="font-size:12.5px; color:var(--text-muted); font-family:'DM Sans',sans-serif; margin:0; line-height:1.55;">Apple-inspired. Pure black backgrounds, electric blue accents, crisp white typography. Clean, premium, focused.</p>
+            </div>
+            <div class="var-card" data-active="{{ varBActive }}" onClick="{{ setSlate }}">
+              <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+                <span style="font-family:'Space Grotesk',sans-serif; font-size:14px; font-weight:600; color:var(--text);">Variation B — Slate</span>
+                <sc-if value="{{ isSlate }}" hint-placeholder-val="{{ false }}">
+                  <span style="font-size:10px; font-weight:700; font-family:'DM Sans',sans-serif; background:var(--accent-dim); color:var(--accent-text); padding:2px 8px; border-radius:10px;">Active</span>
+                </sc-if>
+              </div>
+              <p style="font-size:12.5px; color:var(--text-muted); font-family:'DM Sans',sans-serif; margin:0; line-height:1.55;">GitHub-inspired. Deep blue-grey surfaces, softer accents, approachable neutral palette. Technical, familiar, grounded.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </sc-if>
+
+    <!-- ── APPLICATIONS ── -->
+    <sc-if value="{{ isApplications }}" hint-placeholder-val="{{ false }}">
+      <div class="view-wrap" style="padding:36px 40px;">
+
+        <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom:28px;">
+          <div>
+            <h1 style="font-family:'Space Grotesk',sans-serif; font-size:26px; font-weight:700; color:var(--text); letter-spacing:-0.5px; margin:0 0 5px;">Applications</h1>
+            <p style="font-size:13.5px; color:var(--text-muted); font-family:'DM Sans',sans-serif; margin:0;">{{ filteredCount }} results · sorted by date</p>
+          </div>
+          <button class="btn btn-primary" onClick="{{ openAddApp }}" style="flex-shrink:0;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            Add Application
+          </button>
+        </div>
+
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:20px; flex-wrap:wrap;">
+          <div class="search-wrap" style="flex:1; min-width:180px; max-width:320px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input class="form-input" value="{{ searchQuery }}" onChange="{{ setSearch }}" placeholder="Search company or role...">
+          </div>
+          <div style="display:flex; gap:6px; flex-wrap:wrap;">
+            <button class="{{ filterAllClass }}"       onClick="{{ setFilterAll }}">All</button>
+            <button class="{{ filterAppliedClass }}"   onClick="{{ setFilterApplied }}">Applied</button>
+            <button class="{{ filterInterviewClass }}" onClick="{{ setFilterInterview }}">Interview</button>
+            <button class="{{ filterOfferClass }}"     onClick="{{ setFilterOffer }}">Offer</button>
+            <button class="{{ filterRejectedClass }}"  onClick="{{ setFilterRejected }}">Rejected</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <table class="data-table">
+            <thead>
+              <tr><th>Date</th><th>Company</th><th>Role</th><th>Score</th><th>Status</th><th style="text-align:right;">Actions</th></tr>
+            </thead>
+            <tbody>
+              <sc-for list="{{ filteredApps }}" as="app" hint-placeholder-count="5">
+                <tr onClick="{{ app.clickHandler }}">
+                  <td style="color:var(--text-muted); font-size:12.5px; white-space:nowrap;">{{ app.date }}</td>
+                  <td style="font-weight:600;">{{ app.company }}</td>
+                  <td style="color:var(--text-muted); max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ app.role }}</td>
+                  <td><span class="score-badge" data-level="{{ app.scoreLevel }}">{{ app.score }}</span></td>
+                  <td onClick="{{ app.statusCellClick }}">
+                    <select class="form-input" style="width:116px; padding:5px 26px 5px 8px; font-size:12.5px;" value="{{ app.status }}" onChange="{{ app.statusChangeHandler }}">
+                      <option value="Applied">Applied</option>
+                      <option value="Interview">Interview</option>
+                      <option value="Offer">Offer</option>
+                      <option value="Rejected">Rejected</option>
+                    </select>
+                  </td>
+                  <td style="text-align:right;">
+                    <button class="btn btn-ghost btn-xs" onClick="{{ app.clickHandler }}">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                      View Report
+                    </button>
+                  </td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </sc-if>
+
+    <!-- ── EVALUATION REPORT ── -->
+    <sc-if value="{{ isReport }}" hint-placeholder-val="{{ false }}">
+      <div class="view-wrap" style="padding:36px 40px; max-width:880px;">
+
+        <div style="display:flex; align-items:center; gap:16px; margin-bottom:28px; flex-wrap:wrap;">
+          <button class="btn btn-secondary btn-sm" onClick="{{ backToApps }}">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            Back
+          </button>
+          <div style="flex:1; min-width:0;">
+            <h1 style="font-family:'Space Grotesk',sans-serif; font-size:20px; font-weight:700; color:var(--text); letter-spacing:-0.4px; margin:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ selectedAppTitle }}</h1>
+            <p style="font-size:12.5px; color:var(--text-muted); font-family:'DM Sans',sans-serif; margin:2px 0 0;">Evaluation Report</p>
+          </div>
+          <div style="display:flex; gap:10px; flex-shrink:0;">
+            <button class="btn btn-success-soft btn-sm" onClick="{{ markAsApplied }}">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              Mark as Applied
+            </button>
+            <button class="btn btn-primary btn-sm" onClick="{{ generatePdfCv }}">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+              Generate CV PDF
+            </button>
+          </div>
+        </div>
+
+        <div class="card" style="overflow:visible;">{{ reportEl }}</div>
+
+      </div>
+    </sc-if>
+
+    <!-- ── PIPELINE INBOX ── -->
+    <sc-if value="{{ isPipeline }}" hint-placeholder-val="{{ false }}">
+      <div class="view-wrap" style="padding:36px 40px; max-width:860px;">
+
+        <div style="margin-bottom:28px;">
+          <h1 style="font-family:'Space Grotesk',sans-serif; font-size:26px; font-weight:700; color:var(--text); letter-spacing:-0.5px; margin:0 0 5px;">Pipeline Inbox</h1>
+          <p style="font-size:13.5px; color:var(--text-muted); font-family:'DM Sans',sans-serif; margin:0;">{{ pipelineCount }} URLs queued for evaluation</p>
+        </div>
+
+        <div class="card" style="padding:20px 22px; margin-bottom:20px;">
+          <div style="font-family:'Space Grotesk',sans-serif; font-size:14px; font-weight:600; color:var(--text); margin-bottom:14px;">Add Job URL</div>
+          <div style="display:flex; gap:10px;">
+            <input class="form-input" style="flex:1;" value="{{ newUrl }}" onChange="{{ setNewUrl }}" onKeyDown="{{ addUrlOnEnter }}" placeholder="Paste a job URL and press Enter, or click Add to Pipeline">
+            <button class="btn btn-primary" onClick="{{ addUrl }}" style="flex-shrink:0;">Add to Pipeline</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <sc-if value="{{ pipelineEmpty }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:52px 24px; text-align:center;">
+              <div style="font-size:34px; margin-bottom:14px;">📭</div>
+              <div style="font-family:'Space Grotesk',sans-serif; font-size:16px; font-weight:600; color:var(--text); margin-bottom:6px;">Pipeline is empty</div>
+              <p style="font-size:13.5px; color:var(--text-muted); font-family:'DM Sans',sans-serif; margin:0;">Add job URLs above to start evaluating positions.</p>
+            </div>
+          </sc-if>
+          <sc-for list="{{ pipelineItems }}" as="item" hint-placeholder-count="3">
+            <div class="pipeline-row">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--text-faint)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+              <div style="flex:1; min-width:0;">
+                <div style="font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--text-muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ item.shortUrl }}</div>
+                <div style="font-size:11px; color:var(--text-faint); margin-top:2px; font-family:'DM Sans',sans-serif;">Added {{ item.added }}</div>
+              </div>
+              <div style="display:flex; gap:8px; flex-shrink:0;">
+                <button class="btn btn-primary btn-xs" onClick="{{ item.evaluateHandler }}">Evaluate</button>
+                <button class="btn btn-danger btn-xs" onClick="{{ item.removeHandler }}">Remove</button>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+
+      </div>
+    </sc-if>
+
+    <!-- ── SCAN DASHBOARD ── -->
+    <sc-if value="{{ isScan }}" hint-placeholder-val="{{ false }}">
+      <div class="view-wrap" style="padding:36px 40px; max-width:860px;">
+
+        <div style="margin-bottom:28px;">
+          <h1 style="font-family:'Space Grotesk',sans-serif; font-size:26px; font-weight:700; color:var(--text); letter-spacing:-0.5px; margin:0 0 5px;">Scan Jobs</h1>
+          <p style="font-size:13.5px; color:var(--text-muted); font-family:'DM Sans',sans-serif; margin:0;">Search tracked portals and job boards for new matching positions.</p>
+        </div>
+
+        <div class="card" style="padding:22px; margin-bottom:20px;">
+          <div style="font-family:'Space Grotesk',sans-serif; font-size:14px; font-weight:600; color:var(--text); margin-bottom:14px;">Search Configuration</div>
+          <div style="display:flex; gap:10px; align-items:flex-end;">
+            <div style="flex:1;">
+              <label class="form-label">Keyword Query</label>
+              <input class="form-input" value="{{ scanQuery }}" onChange="{{ setScanQuery }}" placeholder="e.g. senior engineer remote distributed systems platform">
+            </div>
+            <button class="btn btn-primary" onClick="{{ triggerScan }}" style="flex-shrink:0;">{{ scanBtnEl }}</button>
+          </div>
+        </div>
+
+        <sc-if value="{{ scanning }}" hint-placeholder-val="{{ false }}">
+          <div style="text-align:center; padding:64px 24px;">
+            <div style="width:40px; height:40px; border:3px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin 0.8s linear infinite; margin:0 auto 18px;"></div>
+            <div style="font-family:'Space Grotesk',sans-serif; font-size:16px; font-weight:600; color:var(--text); margin-bottom:6px;">Scanning portals...</div>
+            <p style="font-size:13.5px; color:var(--text-muted); font-family:'DM Sans',sans-serif; margin:0;">Searching tracked companies and job boards.</p>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ scanHasResults }}" hint-placeholder-val="{{ false }}">
+          <div class="card">
+            <div style="padding:16px 20px 13px; border-bottom:1px solid var(--border);">
+              <span style="font-family:'Space Grotesk',sans-serif; font-size:14px; font-weight:600; color:var(--text);">Scan Results</span>
+            </div>
+            <sc-for list="{{ scanResults }}" as="result" hint-placeholder-count="3">
+              <div class="scan-row">
+                <div style="flex:1; min-width:0;">
+                  <div style="font-size:14px; font-weight:600; color:var(--text); font-family:'DM Sans',sans-serif; margin-bottom:3px;">{{ result.title }}</div>
+                  <div style="font-size:12.5px; color:var(--text-muted); font-family:'DM Sans',sans-serif;">{{ result.company }} · {{ result.location }}</div>
+                </div>
+                <span class="score-badge" data-level="{{ result.scoreLevel }}" style="flex-shrink:0; margin-right:4px;">{{ result.score }}</span>
+                <div style="display:flex; gap:8px; flex-shrink:0;">
+                  <button class="btn btn-primary btn-xs" onClick="{{ result.addHandler }}">Add to Pipeline</button>
+                  <button class="btn btn-ghost btn-xs" onClick="{{ result.skipHandler }}">Skip</button>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+
+      </div>
+    </sc-if>
+
+    <!-- ── FOLLOW-UPS ── -->
+    <sc-if value="{{ isFollowups }}" hint-placeholder-val="{{ false }}">
+      <div class="view-wrap" style="padding:36px 40px;">
+
+        <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom:28px;">
+          <div>
+            <h1 style="font-family:'Space Grotesk',sans-serif; font-size:26px; font-weight:700; color:var(--text); letter-spacing:-0.5px; margin:0 0 5px;">Follow-ups</h1>
+            <p style="font-size:13.5px; color:var(--text-muted); font-family:'DM Sans',sans-serif; margin:0;">Track outreach and next steps for each active application.</p>
+          </div>
+          <button class="btn btn-primary" onClick="{{ openLogFollowUp }}" style="flex-shrink:0;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            Log Follow-up
+          </button>
+        </div>
+
+        <div class="card">
+          <table class="data-table">
+            <thead><tr><th>Company</th><th>Role</th><th>Date</th><th>Type</th><th>Notes</th></tr></thead>
+            <tbody>
+              <sc-for list="{{ followUpRows }}" as="fu" hint-placeholder-count="3">
+                <tr class="follow-row" data-overdue="{{ fu.overdueStr }}">
+                  <td>
+                    <div style="display:flex; align-items:center; gap:9px;">
+                      <span style="font-weight:600;">{{ fu.company }}</span>
+                      <sc-if value="{{ fu.overdue }}" hint-placeholder-val="{{ false }}">
+                        <span style="display:inline-flex; padding:1px 7px; border-radius:3px; font-size:9.5px; font-weight:700; letter-spacing:0.5px; text-transform:uppercase; background:var(--error-dim); color:var(--error); font-family:'DM Sans',sans-serif;">Overdue</span>
+                      </sc-if>
+                    </div>
+                  </td>
+                  <td style="color:var(--text-muted); max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ fu.role }}</td>
+                  <td style="color:var(--text-muted); white-space:nowrap; font-size:12.5px;">{{ fu.date }}</td>
+                  <td><span style="display:inline-flex; padding:2px 9px; border-radius:20px; font-size:11.5px; font-weight:500; font-family:'DM Sans',sans-serif; background:var(--surface2); color:var(--text-muted);">{{ fu.type }}</span></td>
+                  <td style="color:var(--text-muted); max-width:280px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:12.5px;">{{ fu.notes }}</td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </sc-if>
+
+    <!-- ── CV EDITOR ── -->
+    <sc-if value="{{ isCv }}" hint-placeholder-val="{{ false }}">
+      <div class="view-wrap" style="padding:36px 40px; height:100vh; display:flex; flex-direction:column;">
+
+        <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom:22px; flex-shrink:0;">
+          <div>
+            <h1 style="font-family:'Space Grotesk',sans-serif; font-size:26px; font-weight:700; color:var(--text); letter-spacing:-0.5px; margin:0 0 5px;">CV Editor</h1>
+            <p style="font-size:13.5px; color:var(--text-muted); font-family:'DM Sans',sans-serif; margin:0;">Edit your canonical CV in Markdown. Syncs to cv.md on save.</p>
+          </div>
+          <button class="btn btn-primary" onClick="{{ generateCvPdf }}" style="flex-shrink:0;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            Generate PDF
+          </button>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; flex:1; min-height:0;">
+          <div class="card" style="display:flex; flex-direction:column; overflow:hidden;">
+            <div style="padding:12px 16px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:8px; flex-shrink:0;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+              <span style="font-size:11.5px; font-weight:600; color:var(--text-muted); font-family:'DM Sans',sans-serif; text-transform:uppercase; letter-spacing:0.7px;">Markdown Source</span>
+              <span style="margin-left:auto; font-size:11px; color:var(--text-faint); font-family:'JetBrains Mono',monospace;">cv.md</span>
+            </div>
+            <textarea class="form-input" value="{{ cv }}" onChange="{{ setCv }}" style="flex:1; border:none; border-radius:0; background:transparent; font-family:'JetBrains Mono',monospace; font-size:12.5px; line-height:1.75; resize:none; padding:18px 20px; color:var(--text);"></textarea>
+          </div>
+          <div class="card" style="overflow-y:auto;">
+            <div style="padding:12px 16px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:8px; position:sticky; top:0; background:var(--surface); z-index:1;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              <span style="font-size:11.5px; font-weight:600; color:var(--text-muted); font-family:'DM Sans',sans-serif; text-transform:uppercase; letter-spacing:0.7px;">Live Preview</span>
+            </div>
+            {{ cvRenderedEl }}
+          </div>
+        </div>
+
+      </div>
+    </sc-if>
+
+    <!-- ── COVER LETTER ── -->
+    <sc-if value="{{ isCover }}" hint-placeholder-val="{{ false }}">
+      <div class="view-wrap" style="padding:36px 40px; max-width:1080px;">
+
+        <div style="margin-bottom:28px;">
+          <h1 style="font-family:'Space Grotesk',sans-serif; font-size:26px; font-weight:700; color:var(--text); letter-spacing:-0.5px; margin:0 0 5px;">Cover Letter Generator</h1>
+          <p style="font-size:13.5px; color:var(--text-muted); font-family:'DM Sans',sans-serif; margin:0;">Generate a tailored cover letter from your profile and CV.</p>
+        </div>
+
+        <div style="display:grid; grid-template-columns:340px 1fr; gap:20px;">
+          <div class="card" style="padding:22px; align-self:start;">
+            <div style="font-family:'Space Grotesk',sans-serif; font-size:14px; font-weight:600; color:var(--text); margin-bottom:18px;">Job Details</div>
+            <div style="display:flex; flex-direction:column; gap:15px;">
+              <div>
+                <label class="form-label">Company Name</label>
+                <input class="form-input" value="{{ coverCompany }}" onChange="{{ setCoverCompany }}" placeholder="e.g. Stripe">
+              </div>
+              <div>
+                <label class="form-label">Role Title</label>
+                <input class="form-input" value="{{ coverRole }}" onChange="{{ setCoverRole }}" placeholder="e.g. Senior Software Engineer">
+              </div>
+              <div>
+                <label class="form-label">Job URL (optional)</label>
+                <input class="form-input" value="{{ coverUrl }}" onChange="{{ setCoverUrl }}" placeholder="https://company.com/jobs/123">
+              </div>
+              <button class="btn btn-primary" style="width:100%; margin-top:6px;" onClick="{{ generateCover }}">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                Generate Cover Letter
+              </button>
+            </div>
+          </div>
+
+          <div class="card" style="overflow:hidden; min-height:400px;">
+            <div style="padding:15px 20px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between;">
+              <span style="font-family:'Space Grotesk',sans-serif; font-size:14px; font-weight:600; color:var(--text);">Preview</span>
+              <sc-if value="{{ coverGenerated }}" hint-placeholder-val="{{ false }}">
+                <button class="btn btn-secondary btn-sm" onClick="{{ copyCover }}">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                  Copy to Clipboard
+                </button>
+              </sc-if>
+            </div>
+            <sc-if value="{{ coverNotGenerated }}" hint-placeholder-val="{{ true }}">
+              <div style="padding:64px 32px; text-align:center;">
+                <div style="font-size:38px; margin-bottom:16px; opacity:0.4;">✉</div>
+                <div style="font-family:'Space Grotesk',sans-serif; font-size:15px; font-weight:600; color:var(--text); margin-bottom:7px;">No letter generated yet</div>
+                <p style="font-size:13.5px; color:var(--text-muted); font-family:'DM Sans',sans-serif; margin:0;">Fill in the job details on the left and click Generate.</p>
+              </div>
+            </sc-if>
+            <sc-if value="{{ coverGenerated }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:28px 30px; overflow-y:auto; max-height:calc(100vh - 280px);">
+                <pre style="font-family:'DM Sans',sans-serif; font-size:13.5px; line-height:1.78; color:var(--text); white-space:pre-wrap; margin:0; text-wrap:pretty;">{{ coverContent }}</pre>
+              </div>
+            </sc-if>
+          </div>
+        </div>
+
+      </div>
+    </sc-if>
+
+    <!-- ── PROFILE ── -->
+    <sc-if value="{{ isProfile }}" hint-placeholder-val="{{ false }}">
+      <div class="view-wrap" style="padding:36px 40px; max-width:800px;">
+
+        <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom:32px;">
+          <div>
+            <h1 style="font-family:'Space Grotesk',sans-serif; font-size:26px; font-weight:700; color:var(--text); letter-spacing:-0.5px; margin:0 0 5px;">Profile</h1>
+            <p style="font-size:13.5px; color:var(--text-muted); font-family:'DM Sans',sans-serif; margin:0;">Candidate profile synced to config/profile.yml</p>
+          </div>
+          <div style="display:flex; gap:10px; flex-shrink:0;">
+            <sc-if value="{{ notEditingProfile }}" hint-placeholder-val="{{ true }}">
+              <button class="btn btn-secondary" onClick="{{ openEditProfile }}">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                Edit Profile
+              </button>
+            </sc-if>
+            <sc-if value="{{ editingProfile }}" hint-placeholder-val="{{ false }}">
+              <button class="btn btn-ghost" onClick="{{ cancelEditProfile }}">Cancel</button>
+              <button class="btn btn-primary" onClick="{{ saveProfile }}">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                Save to profile.yml
+              </button>
+            </sc-if>
+          </div>
+        </div>
+
+        <!-- Read-only view -->
+        <sc-if value="{{ notEditingProfile }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex; flex-direction:column; gap:18px;">
+            <div class="card" style="padding:24px;">
+              <div style="display:flex; align-items:center; gap:18px; margin-bottom:24px; padding-bottom:24px; border-bottom:1px solid var(--border);">
+                <div style="width:60px; height:60px; border-radius:50%; background:var(--accent); display:flex; align-items:center; justify-content:center; font-size:24px; font-weight:700; color:#fff; font-family:'Space Grotesk',sans-serif; flex-shrink:0;">{{ profileInitial }}</div>
+                <div>
+                  <div style="font-family:'Space Grotesk',sans-serif; font-size:20px; font-weight:700; color:var(--text); letter-spacing:-0.3px;">{{ savedProfile.name }}</div>
+                  <div style="font-size:13.5px; color:var(--text-muted); font-family:'DM Sans',sans-serif; margin-top:3px;">{{ savedProfile.email }} · {{ savedProfile.location }}</div>
+                </div>
+              </div>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+                <div>
+                  <div style="font-size:10.5px; font-weight:600; letter-spacing:0.8px; text-transform:uppercase; color:var(--text-faint); font-family:'DM Sans',sans-serif; margin-bottom:5px;">Visa / Work Status</div>
+                  <div style="font-size:13.5px; color:var(--text); font-family:'DM Sans',sans-serif;">{{ savedProfile.visaStatus }}</div>
+                </div>
+                <div>
+                  <div style="font-size:10.5px; font-weight:600; letter-spacing:0.8px; text-transform:uppercase; color:var(--text-faint); font-family:'DM Sans',sans-serif; margin-bottom:5px;">Target Roles</div>
+                  <div style="font-size:13.5px; color:var(--text); font-family:'DM Sans',sans-serif;">{{ savedProfile.targetRoles }}</div>
+                </div>
+                <div>
+                  <div style="font-size:10.5px; font-weight:600; letter-spacing:0.8px; text-transform:uppercase; color:var(--text-faint); font-family:'DM Sans',sans-serif; margin-bottom:5px;">Min Salary</div>
+                  <div style="font-size:13.5px; color:var(--text); font-family:'DM Sans',sans-serif;">${{ savedProfile.salaryMin }}</div>
+                </div>
+                <div>
+                  <div style="font-size:10.5px; font-weight:600; letter-spacing:0.8px; text-transform:uppercase; color:var(--text-faint); font-family:'DM Sans',sans-serif; margin-bottom:5px;">Max Salary</div>
+                  <div style="font-size:13.5px; color:var(--text); font-family:'DM Sans',sans-serif;">${{ savedProfile.salaryMax }}</div>
+                </div>
+              </div>
+            </div>
+            <div class="card" style="padding:22px 24px;">
+              <div style="font-size:10.5px; font-weight:600; letter-spacing:0.8px; text-transform:uppercase; color:var(--text-faint); font-family:'DM Sans',sans-serif; margin-bottom:10px;">Professional Narrative</div>
+              <p style="font-size:13.5px; color:var(--text-muted); font-family:'DM Sans',sans-serif; line-height:1.65; margin:0;">{{ savedProfile.narrative }}</p>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- Edit form -->
+        <sc-if value="{{ editingProfile }}" hint-placeholder-val="{{ false }}">
+          <div class="card" style="padding:28px;">
+            <div style="display:flex; flex-direction:column; gap:18px;">
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+                <div>
+                  <label class="form-label">Full Name</label>
+                  <input class="form-input" value="{{ profileDraftData.name }}" onChange="{{ setDraftName }}" placeholder="Full name">
+                </div>
+                <div>
+                  <label class="form-label">Email Address</label>
+                  <input class="form-input" value="{{ profileDraftData.email }}" onChange="{{ setDraftEmail }}" placeholder="email@domain.com">
+                </div>
+              </div>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+                <div>
+                  <label class="form-label">Location</label>
+                  <input class="form-input" value="{{ profileDraftData.location }}" onChange="{{ setDraftLocation }}" placeholder="City, State">
+                </div>
+                <div>
+                  <label class="form-label">Visa / Work Status</label>
+                  <input class="form-input" value="{{ profileDraftData.visaStatus }}" onChange="{{ setDraftVisa }}" placeholder="e.g. US Citizen, H-1B">
+                </div>
+              </div>
+              <div>
+                <label class="form-label">Target Roles</label>
+                <input class="form-input" value="{{ profileDraftData.targetRoles }}" onChange="{{ setDraftRoles }}" placeholder="e.g. Senior Engineer, Staff Engineer, Principal Engineer">
+              </div>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+                <div>
+                  <label class="form-label">Min Salary (USD/year)</label>
+                  <input class="form-input" value="{{ profileDraftData.salaryMin }}" onChange="{{ setDraftSalaryMin }}" placeholder="200000">
+                </div>
+                <div>
+                  <label class="form-label">Max Salary (USD/year)</label>
+                  <input class="form-input" value="{{ profileDraftData.salaryMax }}" onChange="{{ setDraftSalaryMax }}" placeholder="350000">
+                </div>
+              </div>
+              <div>
+                <label class="form-label">Professional Narrative</label>
+                <textarea class="form-input" style="min-height:100px;" value="{{ profileDraftData.narrative }}" onChange="{{ setDraftNarrative }}" placeholder="Brief professional summary for cover letters and outreach..."></textarea>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
+      </div>
+    </sc-if>
+
+    <!-- ── PORTALS CONFIG ── -->
+    <sc-if value="{{ isPortals }}" hint-placeholder-val="{{ false }}">
+      <div class="view-wrap" style="padding:36px 40px; max-width:900px;">
+
+        <div style="margin-bottom:32px;">
+          <h1 style="font-family:'Space Grotesk',sans-serif; font-size:26px; font-weight:700; color:var(--text); letter-spacing:-0.5px; margin:0 0 5px;">Portals Config</h1>
+          <p style="font-size:13.5px; color:var(--text-muted); font-family:'DM Sans',sans-serif; margin:0;">Configure job scanning keywords and tracked company portals. Syncs to portals.yml.</p>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-bottom:20px;">
+          <div class="card" style="padding:22px;">
+            <div style="font-family:'Space Grotesk',sans-serif; font-size:14px; font-weight:600; color:var(--text); margin-bottom:5px;">Positive Keywords</div>
+            <p style="font-size:12.5px; color:var(--text-muted); font-family:'DM Sans',sans-serif; margin:0 0 14px; line-height:1.5;">Roles matching these terms will be included in scan results.</p>
+            <div style="display:flex; flex-wrap:wrap; gap:6px; min-height:34px; margin-bottom:12px;">
+              <sc-for list="{{ positiveKws }}" as="kw" hint-placeholder-count="4">
+                <span class="kw-chip" data-type="positive">{{ kw.kw }}<span class="kw-chip-x" onClick="{{ kw.removeHandler }}">×</span></span>
+              </sc-for>
+            </div>
+            <input class="form-input" value="{{ posKwInput }}" onChange="{{ setPosKwInput }}" onKeyDown="{{ addPosKwOnEnter }}" placeholder="Type a keyword and press Enter to add">
+          </div>
+          <div class="card" style="padding:22px;">
+            <div style="font-family:'Space Grotesk',sans-serif; font-size:14px; font-weight:600; color:var(--text); margin-bottom:5px;">Negative Keywords</div>
+            <p style="font-size:12.5px; color:var(--text-muted); font-family:'DM Sans',sans-serif; margin:0 0 14px; line-height:1.5;">Roles matching these terms will be excluded from scan results.</p>
+            <div style="display:flex; flex-wrap:wrap; gap:6px; min-height:34px; margin-bottom:12px;">
+              <sc-for list="{{ negativeKws }}" as="kw" hint-placeholder-count="4">
+                <span class="kw-chip" data-type="negative">{{ kw.kw }}<span class="kw-chip-x" onClick="{{ kw.removeHandler }}">×</span></span>
+              </sc-for>
+            </div>
+            <input class="form-input" value="{{ negKwInput }}" onChange="{{ setNegKwInput }}" onKeyDown="{{ addNegKwOnEnter }}" placeholder="Type a keyword and press Enter to add">
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="padding:18px 20px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between;">
+            <div>
+              <div style="font-family:'Space Grotesk',sans-serif; font-size:14px; font-weight:600; color:var(--text); margin-bottom:3px;">Tracked Companies</div>
+              <p style="font-size:12.5px; color:var(--text-muted); font-family:'DM Sans',sans-serif; margin:0;">Toggle scanning per company portal.</p>
+            </div>
+            <button class="btn btn-secondary btn-sm" onClick="{{ openPortalsAddForm }}">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+              Add Company
+            </button>
+          </div>
+
+          <sc-if value="{{ portalsAddForm }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:18px 20px; border-bottom:1px solid var(--border); background:var(--surface2);">
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:12px;">
+                <div>
+                  <label class="form-label">Company Name</label>
+                  <input class="form-input" value="{{ newCompanyName }}" onChange="{{ setNewCompanyName }}" placeholder="e.g. Figma">
+                </div>
+                <div>
+                  <label class="form-label">Careers URL</label>
+                  <input class="form-input" value="{{ newCompanyUrl }}" onChange="{{ setNewCompanyUrl }}" placeholder="https://company.com/careers">
+                </div>
+              </div>
+              <div style="display:flex; gap:8px;">
+                <button class="btn btn-primary btn-sm" onClick="{{ submitNewCompany }}">Add Company</button>
+                <button class="btn btn-ghost btn-sm" onClick="{{ closePortalsAddForm }}">Cancel</button>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-for list="{{ companyRows }}" as="co" hint-placeholder-count="4">
+            <div style="display:flex; align-items:center; gap:16px; padding:14px 20px; border-bottom:1px solid var(--border-faint);">
+              <div style="flex:1; min-width:0;">
+                <div style="font-size:13.5px; font-weight:600; color:var(--text); font-family:'DM Sans',sans-serif;">{{ co.name }}</div>
+                <div style="font-size:11.5px; color:var(--text-faint); font-family:'JetBrains Mono',monospace; margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ co.url }}</div>
+              </div>
+              <span style="font-size:12px; color:var(--text-muted); font-family:'DM Sans',sans-serif; min-width:56px; text-align:right;">{{ co.enabledLabel }}</span>
+              <button class="toggle-track" data-on="{{ co.enabledStr }}" onClick="{{ co.toggleHandler }}"></button>
+            </div>
+          </sc-for>
+
+        </div>
+      </div>
+    </sc-if>
+
+  </main>
+
+  <!-- ═══ MODALS ═══ -->
+
+  <!-- Add Application -->
+  <sc-if value="{{ addingApp }}" hint-placeholder-val="{{ false }}">
+    <div class="modal-bg" onClick="{{ closeAddApp }}">
+      <div class="modal-box" onClick="{{ stopProp }}">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:22px;">
+          <h2 style="font-family:'Space Grotesk',sans-serif; font-size:18px; font-weight:700; color:var(--text); letter-spacing:-0.3px;">Add Application</h2>
+          <button class="btn btn-ghost btn-sm" style="padding:4px 8px; font-size:16px;" onClick="{{ closeAddApp }}">✕</button>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:14px;">
+          <div>
+            <label class="form-label">Company Name *</label>
+            <input class="form-input" value="{{ newAppCompany }}" onChange="{{ setNewAppCompany }}" placeholder="e.g. Stripe">
+          </div>
+          <div>
+            <label class="form-label">Role Title *</label>
+            <input class="form-input" value="{{ newAppRole }}" onChange="{{ setNewAppRole }}" placeholder="e.g. Senior Software Engineer">
+          </div>
+          <div>
+            <label class="form-label">Job URL</label>
+            <input class="form-input" value="{{ newAppUrl }}" onChange="{{ setNewAppUrl }}" placeholder="https://company.com/jobs/listing/123">
+          </div>
+          <div>
+            <label class="form-label">Notes</label>
+            <textarea class="form-input" value="{{ newAppNotes }}" onChange="{{ setNewAppNotes }}" placeholder="Initial impressions, key requirements, referral info..."></textarea>
+          </div>
+        </div>
+        <div style="display:flex; gap:10px; margin-top:22px;">
+          <button class="btn btn-primary" style="flex:1;" onClick="{{ submitNewApp }}">Add Application</button>
+          <button class="btn btn-secondary" onClick="{{ closeAddApp }}">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- Log Follow-up -->
+  <sc-if value="{{ logFollowUpForm }}" hint-placeholder-val="{{ false }}">
+    <div class="modal-bg" onClick="{{ closeLogFollowUp }}">
+      <div class="modal-box" onClick="{{ stopProp }}">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:22px;">
+          <h2 style="font-family:'Space Grotesk',sans-serif; font-size:18px; font-weight:700; color:var(--text); letter-spacing:-0.3px;">Log Follow-up</h2>
+          <button class="btn btn-ghost btn-sm" style="padding:4px 8px; font-size:16px;" onClick="{{ closeLogFollowUp }}">✕</button>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:14px;">
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+            <div>
+              <label class="form-label">Company *</label>
+              <input class="form-input" value="{{ newFuCompany }}" onChange="{{ setFuCompany }}" placeholder="Company name">
+            </div>
+            <div>
+              <label class="form-label">Role</label>
+              <input class="form-input" value="{{ newFuRole }}" onChange="{{ setFuRole }}" placeholder="Role title">
+            </div>
+          </div>
+          <div>
+            <label class="form-label">Contact Type</label>
+            <select class="form-input" value="{{ newFuType }}" onChange="{{ setFuType }}">
+              <option value="Email">Email</option>
+              <option value="LinkedIn">LinkedIn</option>
+              <option value="Phone">Phone</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label">Notes</label>
+            <textarea class="form-input" value="{{ newFuNotes }}" onChange="{{ setFuNotes }}" placeholder="What was discussed, next steps..."></textarea>
+          </div>
+        </div>
+        <div style="display:flex; gap:10px; margin-top:22px;">
+          <button class="btn btn-primary" style="flex:1;" onClick="{{ submitFollowUp }}">Log Follow-up</button>
+          <button class="btn btn-secondary" onClick="{{ closeLogFollowUp }}">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- Toast -->
+  <sc-if value="{{ showToast }}" hint-placeholder-val="{{ false }}">
+    <div class="toast-pill"><span style="color:var(--success); margin-right:8px;">✓</span>{{ toast }}</div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = {
+    view: 'dashboard', theme: 'obsidian',
+    applications: [
+      { id: 1, date: '2026-05-15', company: 'Stripe',    role: 'Senior Software Engineer',           score: 87, status: 'Applied',   notes: 'Strong match for distributed systems role. Excellent culture alignment based on engineering blog.' },
+      { id: 2, date: '2026-05-22', company: 'Vercel',    role: 'Staff Engineer — Infrastructure',     score: 92, status: 'Interview', notes: 'Technical screen scheduled for next week. Outstanding remote-first culture and team quality.' },
+      { id: 3, date: '2026-05-28', company: 'Linear',    role: 'Product Engineer',                    score: 74, status: 'Applied',   notes: 'Great product culture and async-first environment. Some role mismatch on infrastructure depth.' },
+      { id: 4, date: '2026-06-02', company: 'Notion',    role: 'Lead Engineer — Platform',            score: 58, status: 'Rejected',  notes: 'Insufficient infrastructure background per job description requirements.' },
+      { id: 5, date: '2026-06-05', company: 'Figma',     role: 'Principal Software Engineer',         score: 88, status: 'Offer',     notes: 'Excellent compensation package. Decision deadline is June 20 — top-tier team alignment.' },
+      { id: 6, date: '2026-06-10', company: 'Anthropic', role: 'Research Infrastructure Engineer',    score: 95, status: 'Interview', notes: 'Dream role — background aligns perfectly with all listed requirements and company mission.' },
+    ],
+    pipeline: [
+      { id: 1, url: 'https://stripe.com/jobs/listing/sr-eng-distributed-456',   added: '2026-06-10' },
+      { id: 2, url: 'https://jobs.lever.co/vercel/staff-engineer-backend-abc',  added: '2026-06-11' },
+      { id: 3, url: 'https://linear.app/careers/senior-product-engineer-xyz',   added: '2026-06-12' },
+    ],
+    followUps: [
+      { id: 1, company: 'Stripe',     role: 'Senior Software Engineer',        date: '2026-05-28', type: 'Email',    notes: 'Sent intro email to recruiter Sarah — no reply received yet.',   overdue: true  },
+      { id: 2, company: 'Vercel',     role: 'Staff Engineer — Infrastructure', date: '2026-06-08', type: 'LinkedIn', notes: 'Connected with recruiter Jamie Kim on LinkedIn.',                 overdue: false },
+      { id: 3, company: 'Figma',      role: 'Principal Software Engineer',     date: '2026-06-15', type: 'Phone',    notes: 'Offer discussion call scheduled with hiring manager.',           overdue: false },
+    ],
+    profile: {
+      name: 'Alex Chen', email: 'alex.chen@gmail.com', location: 'San Francisco, CA',
+      visaStatus: 'US Citizen', targetRoles: 'Senior Engineer, Staff Engineer, Principal Engineer',
+      salaryMin: '200000', salaryMax: '350000',
+      narrative: 'Senior engineer with 8+ years building scalable distributed systems at hypergrowth companies. I thrive at the intersection of infrastructure and product, bringing clarity to complex technical problems.',
+    },
+    portals: {
+      positiveKeywords: ['senior', 'staff', 'principal', 'remote', 'distributed', 'platform'],
+      negativeKeywords: ['junior', 'intern', 'manager', 'sales', 'support'],
+      companies: [
+        { id: 1, name: 'Stripe',    url: 'https://stripe.com/jobs',          enabled: true  },
+        { id: 2, name: 'Vercel',    url: 'https://vercel.com/careers',        enabled: true  },
+        { id: 3, name: 'Linear',    url: 'https://linear.app/careers',        enabled: false },
+        { id: 4, name: 'Anthropic', url: 'https://anthropic.com/careers',     enabled: true  },
+      ],
+    },
+    cv: `# Alex Chen\n**Senior Software Engineer**\nalex.chen@gmail.com · San Francisco, CA\n\n---\n\n## Summary\nSenior engineer with 8+ years building scalable distributed systems. Expert in infrastructure, platform engineering, and developer tooling.\n\n## Core Skills\nTypeScript · Python · Go · Rust · AWS · GCP · Kubernetes · PostgreSQL · Redis · Kafka\n\n## Professional Experience\n\n### Senior Software Engineer — Vercel (2022–Present)\n- Led migration of edge runtime to Rust, reducing P99 latency by 42%\n- Built CI/CD pipeline serving 50B+ deployments/month\n- Mentored 4 engineers; promoted 2 to senior\n\n### Software Engineer — Stripe (2019–2022)\n- Designed fraud detection handling $1B+ daily transactions\n- Reduced infrastructure costs 35% via compute optimization\n- Open-sourced 3 tools with 2k+ GitHub stars\n\n## Education\n**B.S. Computer Science** — UC Berkeley, 2018\n\n## Key Achievements\n- Reduced P99 API latency from 800ms to 42ms\n- Built distributed rate-limiter used by 200+ microservices\n- Speaker at QCon SF 2024`,
+    selectedAppId: null, searchQuery: '', statusFilter: 'all',
+    newUrl: '', newApp: { company: '', role: '', url: '', notes: '' }, addingApp: false,
+    scanQuery: '', scanning: false, scanResults: [],
+    logFollowUpForm: false, newFollowUp: { company: '', role: '', type: 'Email', notes: '' },
+    coverLetter: { company: '', role: '', url: '', generated: false, content: '' },
+    editingProfile: false, profileDraft: null,
+    posKwInput: '', negKwInput: '',
+    portalsAddForm: false, newCompany: { name: '', url: '' },
+    toast: '',
+  };
+
+  showToast(msg) {
+    this.setState({ toast: msg });
+    clearTimeout(this._toastTimer);
+    this._toastTimer = setTimeout(() => this.setState({ toast: '' }), 2800);
+  }
+
+  parseMarkdown(md) {
+    return md.split('\n').map(line => {
+      if (line.startsWith('# '))   return `<h1>${line.slice(2)}</h1>`;
+      if (line.startsWith('## '))  return `<h2>${line.slice(3)}</h2>`;
+      if (line.startsWith('### ')) return `<h3>${line.slice(4)}</h3>`;
+      if (line.startsWith('- '))   return `<li>${line.slice(2).replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}</li>`;
+      if (line === '---')           return '<hr>';
+      if (!line.trim())             return '';
+      return `<p>${line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/`(.*?)`/g, '<code>$1</code>')}</p>`;
+    }).join('');
+  }
+
+  buildReportEl(app) {
+    const s = app.score;
+    const col = s >= 85 ? '#30d158' : s >= 70 ? '#ff9f0a' : '#ff453a';
+    const grade = s >= 90 ? 'A' : s >= 80 ? 'B' : s >= 70 ? 'C' : s >= 60 ? 'D' : 'F';
+    const reco = s >= 85
+      ? `<strong style="color:#30d158">Strong Apply</strong> — Top-tier match. Prioritize this and tailor your CV for maximum impact.`
+      : s >= 70
+      ? `<strong style="color:#ff9f0a">Apply</strong> — Good fit with minor gaps. Address concerns in your cover letter.`
+      : `<strong style="color:#ff453a">Low Priority</strong> — Significant mismatches detected. Only apply if pipeline is thin.`;
+    const rows = [['Role Match', Math.min(100, s + 5)], ['Company Fit', Math.min(100, s - 2)], ['Comp Alignment', Math.min(100, s - 7)], ['Legitimacy (G)', 98]];
+    const breakdown = rows.map(([l, v]) =>
+      `<div style="margin-bottom:11px"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:12.5px;color:var(--text-muted);font-family:'DM Sans',sans-serif">${l}</span><span style="font-size:12px;font-weight:700;color:var(--text);font-family:'Space Grotesk',sans-serif">${v}</span></div><div style="height:5px;background:var(--surface3);border-radius:3px;overflow:hidden"><div style="width:${v}%;height:100%;background:${col};border-radius:3px"></div></div></div>`
+    ).join('');
+    const html = `<div style="padding:28px 32px;font-family:'DM Sans',sans-serif;color:var(--text)">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin-bottom:28px">
+        <div><h1 style="font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:700;color:var(--text);margin:0 0 5px;letter-spacing:-0.4px">${app.role}</h1><div style="font-size:15px;color:var(--text-muted)">${app.company}</div><div style="font-size:12px;color:var(--text-faint);margin-top:4px">Evaluated: ${app.date}</div></div>
+        <div style="text-align:center;background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:18px 26px;flex-shrink:0"><div style="font-family:'Space Grotesk',sans-serif;font-size:54px;font-weight:700;line-height:1;color:${col}">${grade}</div><div style="font-size:10px;color:var(--text-faint);text-transform:uppercase;letter-spacing:0.8px;margin-top:5px;font-weight:600">Grade</div></div>
+      </div>
+      <div style="margin-bottom:26px"><div style="font-size:10.5px;color:var(--text-faint);text-transform:uppercase;letter-spacing:0.9px;font-weight:600;margin-bottom:9px;font-family:'DM Sans',sans-serif">Overall Score</div><div style="display:flex;align-items:center;gap:14px"><div style="flex:1;height:8px;background:var(--surface3);border-radius:4px;overflow:hidden"><div style="width:${s}%;height:100%;background:${col};border-radius:4px;transition:width 1s cubic-bezier(.4,0,.2,1)"></div></div><div style="font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:700;color:${col};min-width:60px;text-align:right">${s}<span style="font-size:13px;font-weight:400;color:var(--text-faint)">/100</span></div></div></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px">
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:20px"><div style="font-size:10.5px;text-transform:uppercase;letter-spacing:0.9px;font-weight:600;color:var(--text-faint);margin-bottom:16px;font-family:'DM Sans',sans-serif">Score Breakdown</div>${breakdown}</div>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:20px"><div style="font-size:10.5px;text-transform:uppercase;letter-spacing:0.9px;font-weight:600;color:var(--text-faint);margin-bottom:12px;font-family:'DM Sans',sans-serif">Fit Assessment</div><p style="font-size:13.5px;color:var(--text-muted);line-height:1.65;margin:0 0 16px">${app.notes}</p><div style="border-top:1px solid var(--border);padding-top:12px"><div style="font-size:10.5px;text-transform:uppercase;letter-spacing:0.9px;font-weight:600;color:var(--text-faint);margin-bottom:6px">Status</div><span style="display:inline-flex;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:500;background:var(--accent-dim);color:var(--accent-text)">${app.status}</span></div></div>
+      </div>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:20px"><div style="font-size:10.5px;text-transform:uppercase;letter-spacing:0.9px;font-weight:600;color:var(--text-faint);margin-bottom:10px;font-family:'DM Sans',sans-serif">Recommendation</div><p style="font-size:13.5px;color:var(--text-muted);line-height:1.65;margin:0">${reco}</p></div>
+    </div>`;
+    return React.createElement('div', { dangerouslySetInnerHTML: { __html: html } });
+  }
+
+  renderVals() {
+    const s = this.state;
+    const { view, theme, applications, pipeline, followUps, profile, portals, cv } = s;
+    const go = (v) => () => this.setState({ view: v });
+    const sl = (n) => n >= 85 ? 'high' : n >= 70 ? 'mid' : 'low';
+
+    const statsTotal     = applications.length;
+    const statsInterview = applications.filter(a => a.status === 'Interview').length;
+    const statsOffer     = applications.filter(a => a.status === 'Offer').length;
+    const pipelineCount  = pipeline.length;
+    const overdueCount   = followUps.filter(f => f.overdue).length;
+    const hasOverdue     = overdueCount > 0;
+
+    // Histogram
+    const hBuckets = [
+      { range: '< 70', count: applications.filter(a => a.score < 70).length,                          level: 'low'  },
+      { range: '70–79', count: applications.filter(a => a.score >= 70 && a.score < 80).length,         level: 'mid'  },
+      { range: '80–89', count: applications.filter(a => a.score >= 80 && a.score < 90).length,         level: 'high' },
+      { range: '90+',   count: applications.filter(a => a.score >= 90).length,                         level: 'high' },
+    ];
+    const hMax = Math.max(...hBuckets.map(b => b.count), 1);
+    const colMap = { high: 'var(--success)', mid: 'var(--warning)', low: 'var(--error)' };
+    const histogramEl = React.createElement('div', { style: { display: 'flex', alignItems: 'flex-end', gap: 10, height: 80, paddingTop: 4 } },
+      hBuckets.map((b, i) => {
+        const h = Math.max(Math.round((b.count / hMax) * 62), b.count > 0 ? 6 : 0);
+        return React.createElement('div', { key: i, style: { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 } },
+          React.createElement('div', { style: { fontSize: 10, color: 'var(--text-faint)', fontFamily: "'DM Sans',sans-serif", marginBottom: 2 } }, b.count),
+          React.createElement('div', { style: { width: '100%', height: h, background: colMap[b.level], borderRadius: '4px 4px 0 0', opacity: 0.85, transition: 'height 0.6s cubic-bezier(.4,0,.2,1)' } }),
+          React.createElement('div', { style: { fontSize: 9.5, color: 'var(--text-faint)', fontFamily: "'DM Sans',sans-serif", whiteSpace: 'nowrap', marginTop: 4 } }, b.range)
+        );
+      })
+    );
+
+    const recentApps = [...applications].slice(-5).reverse().map(a => ({
+      ...a, scoreLevel: sl(a.score),
+      clickHandler: () => this.setState({ selectedAppId: a.id, view: 'report' }),
+    }));
+
+    const q = s.searchQuery.toLowerCase();
+    const filteredApps = applications
+      .filter(a => (!q || a.company.toLowerCase().includes(q) || a.role.toLowerCase().includes(q)) && (s.statusFilter === 'all' || a.status === s.statusFilter))
+      .map(a => ({
+        ...a, scoreLevel: sl(a.score),
+        clickHandler:      () => this.setState({ selectedAppId: a.id, view: 'report' }),
+        statusCellClick:   (e) => e.stopPropagation(),
+        statusChangeHandler: (e) => {
+          e.stopPropagation();
+          this.setState({ applications: this.state.applications.map(x => x.id === a.id ? { ...x, status: e.target.value } : x) });
+        },
+      }));
+
+    const selectedApp = s.selectedAppId ? applications.find(a => a.id === s.selectedAppId) : null;
+
+    const pipelineItems = pipeline.map(item => ({
+      ...item,
+      shortUrl: item.url.replace(/^https?:\/\//, '').slice(0, 70) + (item.url.length > 78 ? '…' : ''),
+      removeHandler:   () => this.setState({ pipeline: this.state.pipeline.filter(x => x.id !== item.id) }),
+      evaluateHandler: () => {
+        const parts = item.url.replace(/^https?:\/\/(?:www\.)?/, '').split(/[./]/);
+        const co = parts[0].charAt(0).toUpperCase() + parts[0].slice(1);
+        const newA = { id: Date.now(), date: new Date().toISOString().slice(0, 10), company: co, role: 'Software Engineer', score: Math.floor(Math.random() * 34) + 60, status: 'Applied', notes: `Auto-evaluated from pipeline URL.` };
+        this.setState({ applications: [...this.state.applications, newA], pipeline: this.state.pipeline.filter(x => x.id !== item.id) });
+        this.showToast('Evaluation complete — added to Applications');
+      },
+    }));
+
+    const scanResults = s.scanResults.map(r => ({
+      ...r, scoreLevel: sl(r.score),
+      addHandler:  () => {
+        this.setState({ pipeline: [...this.state.pipeline, { id: Date.now(), url: r.url, added: new Date().toISOString().slice(0, 10) }], scanResults: this.state.scanResults.filter(x => x.id !== r.id) });
+        this.showToast('Added to Pipeline Inbox');
+      },
+      skipHandler: () => this.setState({ scanResults: this.state.scanResults.filter(x => x.id !== r.id) }),
+    }));
+
+    // Scan button React element
+    const scanBtnEl = React.createElement(React.Fragment, null,
+      s.scanning
+        ? React.createElement('div', { style: { width: 14, height: 14, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.75s linear infinite', flexShrink: 0 } })
+        : React.createElement('svg', { width: 14, height: 14, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: '2', strokeLinecap: 'round', strokeLinejoin: 'round' },
+            React.createElement('circle', { cx: '11', cy: '11', r: '8' }),
+            React.createElement('line', { x1: '21', y1: '21', x2: '16.65', y2: '16.65' })
+          ),
+      React.createElement('span', null, s.scanning ? 'Scanning...' : s.scanResults.length > 0 ? 'Scan Again' : 'Start Scan')
+    );
+
+    const positiveKws = portals.positiveKeywords.map(kw => ({
+      kw, removeHandler: () => {
+        const kws = this.state.portals.positiveKeywords.filter(k => k !== kw);
+        this.setState({ portals: { ...this.state.portals, positiveKeywords: kws } });
+      },
+    }));
+    const negativeKws = portals.negativeKeywords.map(kw => ({
+      kw, removeHandler: () => {
+        const kws = this.state.portals.negativeKeywords.filter(k => k !== kw);
+        this.setState({ portals: { ...this.state.portals, negativeKeywords: kws } });
+      },
+    }));
+    const companyRows = portals.companies.map(c => ({
+      ...c,
+      enabledStr:   String(c.enabled),
+      enabledLabel: c.enabled ? 'Enabled' : 'Disabled',
+      toggleHandler: () => {
+        const companies = this.state.portals.companies.map(x => x.id === c.id ? { ...x, enabled: !x.enabled } : x);
+        this.setState({ portals: { ...this.state.portals, companies } });
+      },
+    }));
+
+    const pd = s.profileDraft || profile;
+
+    const cvRenderedEl = React.createElement('div', {
+      className: 'cv-rendered',
+      dangerouslySetInnerHTML: { __html: this.parseMarkdown(cv) },
+      style: { padding: '20px 24px', lineHeight: 1.65 },
+    });
+
+    const btnBase = 'btn btn-sm';
+    const mkFilterClass = (val) => s.statusFilter === val ? `${btnBase} btn-primary` : `${btnBase} btn-secondary`;
+
+    return {
+      theme,
+      isObsidian: theme === 'obsidian', isSlate: theme === 'slate',
+      varAActive: String(theme === 'obsidian'), varBActive: String(theme === 'slate'),
+      setObsidian: () => this.setState({ theme: 'obsidian' }),
+      setSlate:    () => this.setState({ theme: 'slate' }),
+      stopProp:    (e) => e.stopPropagation(),
+
+      isDashboard:    view === 'dashboard',
+      isApplications: view === 'applications',
+      isReport:       view === 'report',
+      isPipeline:     view === 'pipeline',
+      isScan:         view === 'scan',
+      isFollowups:    view === 'followups',
+      isCv:           view === 'cv',
+      isCover:        view === 'cover',
+      isProfile:      view === 'profile',
+      isPortals:      view === 'portals',
+
+      goDashboard:    go('dashboard'),    goApplications: go('applications'),
+      goPipeline:     go('pipeline'),     goScan:         go('scan'),
+      goFollowups:    go('followups'),    goCv:           go('cv'),
+      goCover:        go('cover'),        goProfile:      go('profile'),
+      goPortals:      go('portals'),
+
+      profileInitial:   profile.name.charAt(0),
+      profileFirstName: profile.name.split(' ')[0],
+      savedProfile:     profile,
+      profileDraftData: pd,
+
+      statsTotal, statsInterview, statsOffer, pipelineCount,
+      overdueCount, hasOverdue,
+      overdueLabel: `${overdueCount} overdue follow-up${overdueCount !== 1 ? 's' : ''}`,
+      histogramEl, recentApps, totalApps: statsTotal,
+
+      filteredApps, filteredCount: filteredApps.length,
+      searchQuery: s.searchQuery,
+      setSearch: (e) => this.setState({ searchQuery: e.target.value }),
+      statusFilter: s.statusFilter,
+      setFilterAll:       () => this.setState({ statusFilter: 'all' }),
+      setFilterApplied:   () => this.setState({ statusFilter: 'Applied' }),
+      setFilterInterview: () => this.setState({ statusFilter: 'Interview' }),
+      setFilterOffer:     () => this.setState({ statusFilter: 'Offer' }),
+      setFilterRejected:  () => this.setState({ statusFilter: 'Rejected' }),
+      filterAllClass:       mkFilterClass('all'),
+      filterAppliedClass:   mkFilterClass('Applied'),
+      filterInterviewClass: mkFilterClass('Interview'),
+      filterOfferClass:     mkFilterClass('Offer'),
+      filterRejectedClass:  mkFilterClass('Rejected'),
+
+      addingApp: s.addingApp,
+      openAddApp:  () => this.setState({ addingApp: true }),
+      closeAddApp: () => this.setState({ addingApp: false }),
+      newAppCompany: s.newApp.company, newAppRole: s.newApp.role,
+      newAppUrl:     s.newApp.url,    newAppNotes: s.newApp.notes,
+      setNewAppCompany: (e) => this.setState({ newApp: { ...this.state.newApp, company: e.target.value } }),
+      setNewAppRole:    (e) => this.setState({ newApp: { ...this.state.newApp, role:    e.target.value } }),
+      setNewAppUrl:     (e) => this.setState({ newApp: { ...this.state.newApp, url:     e.target.value } }),
+      setNewAppNotes:   (e) => this.setState({ newApp: { ...this.state.newApp, notes:   e.target.value } }),
+      submitNewApp: () => {
+        const { company, role } = this.state.newApp;
+        if (!company || !role) return;
+        const a = { id: Date.now(), date: new Date().toISOString().slice(0, 10), company, role, score: 0, status: 'Applied', notes: this.state.newApp.notes };
+        this.setState({ applications: [...this.state.applications, a], addingApp: false, newApp: { company: '', role: '', url: '', notes: '' } });
+        this.showToast('Application added successfully');
+      },
+
+      selectedApp,
+      selectedAppTitle:    selectedApp ? selectedApp.company + ' — ' + selectedApp.role : '',
+      selectedAppScoreLevel: selectedApp ? sl(selectedApp.score) : 'low',
+      reportEl: selectedApp ? this.buildReportEl(selectedApp) : null,
+      backToApps:    go('applications'),
+      markAsApplied: () => {
+        if (!s.selectedAppId) return;
+        this.setState({ applications: this.state.applications.map(a => a.id === s.selectedAppId ? { ...a, status: 'Applied' } : a) });
+        this.showToast('Status updated to Applied');
+      },
+      generatePdfCv: () => this.showToast('PDF generated — saved to output/'),
+
+      pipelineItems, pipelineEmpty: pipeline.length === 0,
+      newUrl: s.newUrl,
+      setNewUrl: (e) => this.setState({ newUrl: e.target.value }),
+      addUrl: () => {
+        const u = this.state.newUrl.trim(); if (!u) return;
+        this.setState({ pipeline: [...this.state.pipeline, { id: Date.now(), url: u, added: new Date().toISOString().slice(0, 10) }], newUrl: '' });
+        this.showToast('URL added to pipeline');
+      },
+      addUrlOnEnter: (e) => {
+        if (e.key !== 'Enter') return;
+        const u = this.state.newUrl.trim(); if (!u) return;
+        this.setState({ pipeline: [...this.state.pipeline, { id: Date.now(), url: u, added: new Date().toISOString().slice(0, 10) }], newUrl: '' });
+        this.showToast('URL added to pipeline');
+      },
+
+      scanQuery: s.scanQuery, setScanQuery: (e) => this.setState({ scanQuery: e.target.value }),
+      scanning: s.scanning, scanResults, scanBtnEl,
+      scanHasResults: s.scanResults.length > 0,
+      triggerScan: () => {
+        if (this.state.scanning) return;
+        this.setState({ scanning: true, scanResults: [] });
+        setTimeout(() => this.setState({
+          scanning: false,
+          scanResults: [
+            { id: 1, title: 'Senior Software Engineer',  company: 'Airbnb',   location: 'Remote',            score: 82, url: 'https://airbnb.com/jobs/sr-eng-1' },
+            { id: 2, title: 'Staff Engineer — Platform',  company: 'Shopify',  location: 'Remote / Toronto',   score: 91, url: 'https://shopify.com/careers/staff-2' },
+            { id: 3, title: 'Principal Engineer',         company: 'Stripe',   location: 'SF / Remote',        score: 87, url: 'https://stripe.com/jobs/principal-3' },
+          ],
+        }), 2200);
+      },
+
+      followUpRows: followUps.map(f => ({ ...f, overdueStr: String(f.overdue) })),
+      logFollowUpForm: s.logFollowUpForm,
+      openLogFollowUp:  () => this.setState({ logFollowUpForm: true }),
+      closeLogFollowUp: () => this.setState({ logFollowUpForm: false }),
+      newFuCompany: s.newFollowUp.company, newFuRole: s.newFollowUp.role,
+      newFuType:    s.newFollowUp.type,    newFuNotes: s.newFollowUp.notes,
+      setFuCompany: (e) => this.setState({ newFollowUp: { ...this.state.newFollowUp, company: e.target.value } }),
+      setFuRole:    (e) => this.setState({ newFollowUp: { ...this.state.newFollowUp, role:    e.target.value } }),
+      setFuType:    (e) => this.setState({ newFollowUp: { ...this.state.newFollowUp, type:    e.target.value } }),
+      setFuNotes:   (e) => this.setState({ newFollowUp: { ...this.state.newFollowUp, notes:   e.target.value } }),
+      submitFollowUp: () => {
+        if (!this.state.newFollowUp.company) return;
+        const fu = { id: Date.now(), ...this.state.newFollowUp, date: new Date().toISOString().slice(0, 10), overdue: false };
+        this.setState({ followUps: [...this.state.followUps, fu], logFollowUpForm: false, newFollowUp: { company: '', role: '', type: 'Email', notes: '' } });
+        this.showToast('Follow-up logged');
+      },
+
+      cv, cvRenderedEl,
+      setCv: (e) => this.setState({ cv: e.target.value }),
+      generateCvPdf: () => this.showToast('PDF generated — saved to output/cv-alex-chen.pdf'),
+
+      coverCompany: s.coverLetter.company, coverRole: s.coverLetter.role,
+      coverUrl:     s.coverLetter.url,     coverGenerated: s.coverLetter.generated,
+      coverNotGenerated: !s.coverLetter.generated, coverContent: s.coverLetter.content,
+      setCoverCompany: (e) => this.setState({ coverLetter: { ...this.state.coverLetter, company: e.target.value } }),
+      setCoverRole:    (e) => this.setState({ coverLetter: { ...this.state.coverLetter, role:    e.target.value } }),
+      setCoverUrl:     (e) => this.setState({ coverLetter: { ...this.state.coverLetter, url:     e.target.value } }),
+      generateCover: () => {
+        const { company, role } = this.state.coverLetter;
+        if (!company || !role) return;
+        const p = this.state.profile;
+        const content = `Dear Hiring Team at ${company},\n\nI am writing to express my enthusiastic interest in the ${role} position. With 8+ years of experience building scalable distributed systems at Stripe and Vercel, I am confident I can make a meaningful contribution to your team at ${company}.\n\nIn my current role at Vercel, I led the migration of the edge runtime to Rust — reducing P99 latency by 42% — and built CI/CD infrastructure serving 50 billion deployments per month. At Stripe, I designed fraud detection systems processing over $1B in daily transactions and reduced infrastructure costs by 35%.\n\nWhat excites me about ${company} is the scale of engineering problems you're solving and the craft your team brings to developer experience. I'd love to bring my distributed systems expertise and product-minded thinking to your team.\n\nThank you for considering my application. I look forward to the possibility of contributing to ${company}'s mission.\n\nWarm regards,\n${p.name}\n${p.email}`;
+        this.setState({ coverLetter: { ...this.state.coverLetter, generated: true, content } });
+      },
+      copyCover: () => {
+        if (!this.state.coverLetter.content) return;
+        navigator.clipboard.writeText(this.state.coverLetter.content).catch(() => {});
+        this.showToast('Cover letter copied to clipboard');
+      },
+
+      editingProfile: s.editingProfile, notEditingProfile: !s.editingProfile,
+      openEditProfile:   () => this.setState({ editingProfile: true, profileDraft: { ...this.state.profile } }),
+      cancelEditProfile: () => this.setState({ editingProfile: false, profileDraft: null }),
+      saveProfile: () => {
+        this.setState({ profile: { ...this.state.profileDraft }, editingProfile: false, profileDraft: null });
+        this.showToast('Profile saved to config/profile.yml');
+      },
+      setDraftName:      (e) => this.setState({ profileDraft: { ...this.state.profileDraft, name:      e.target.value } }),
+      setDraftEmail:     (e) => this.setState({ profileDraft: { ...this.state.profileDraft, email:     e.target.value } }),
+      setDraftLocation:  (e) => this.setState({ profileDraft: { ...this.state.profileDraft, location:  e.target.value } }),
+      setDraftVisa:      (e) => this.setState({ profileDraft: { ...this.state.profileDraft, visaStatus: e.target.value } }),
+      setDraftRoles:     (e) => this.setState({ profileDraft: { ...this.state.profileDraft, targetRoles: e.target.value } }),
+      setDraftSalaryMin: (e) => this.setState({ profileDraft: { ...this.state.profileDraft, salaryMin: e.target.value } }),
+      setDraftSalaryMax: (e) => this.setState({ profileDraft: { ...this.state.profileDraft, salaryMax: e.target.value } }),
+      setDraftNarrative: (e) => this.setState({ profileDraft: { ...this.state.profileDraft, narrative: e.target.value } }),
+
+      positiveKws, negativeKws, companyRows,
+      posKwInput: s.posKwInput || '', setPosKwInput: (e) => this.setState({ posKwInput: e.target.value }),
+      addPosKwOnEnter: (e) => {
+        if (e.key !== 'Enter' || !this.state.posKwInput.trim()) return;
+        const kws = [...this.state.portals.positiveKeywords, this.state.posKwInput.trim()];
+        this.setState({ portals: { ...this.state.portals, positiveKeywords: kws }, posKwInput: '' });
+      },
+      negKwInput: s.negKwInput || '', setNegKwInput: (e) => this.setState({ negKwInput: e.target.value }),
+      addNegKwOnEnter: (e) => {
+        if (e.key !== 'Enter' || !this.state.negKwInput.trim()) return;
+        const kws = [...this.state.portals.negativeKeywords, this.state.negKwInput.trim()];
+        this.setState({ portals: { ...this.state.portals, negativeKeywords: kws }, negKwInput: '' });
+      },
+      portalsAddForm: s.portalsAddForm,
+      openPortalsAddForm:  () => this.setState({ portalsAddForm: true }),
+      closePortalsAddForm: () => this.setState({ portalsAddForm: false }),
+      newCompanyName: s.newCompany.name, newCompanyUrl: s.newCompany.url,
+      setNewCompanyName: (e) => this.setState({ newCompany: { ...this.state.newCompany, name: e.target.value } }),
+      setNewCompanyUrl:  (e) => this.setState({ newCompany: { ...this.state.newCompany, url:  e.target.value } }),
+      submitNewCompany: () => {
+        if (!this.state.newCompany.name) return;
+        const companies = [...this.state.portals.companies, { id: Date.now(), name: this.state.newCompany.name, url: this.state.newCompany.url, enabled: true }];
+        this.setState({ portals: { ...this.state.portals, companies }, portalsAddForm: false, newCompany: { name: '', url: '' } });
+        this.showToast('Company added to portals');
+      },
+
+      toast: s.toast, showToast: !!s.toast,
+    };
+  }
+}
+</script>
+</body>
+</html>

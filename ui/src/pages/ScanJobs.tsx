@@ -1,12 +1,27 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useApp } from '../lib/context'
 
+// Regions for Auto Scan tab
 const REGIONS = [
   { value: 'all', label: 'All UAE' },
   { value: 'dubai', label: 'Dubai' },
   { value: 'abu-dhabi', label: 'Abu Dhabi' },
   { value: 'sharjah', label: 'Sharjah' },
   { value: 'remote', label: 'Remote / WFH' },
+]
+
+// All UAE emirates + broader options for Google Search tab
+const UAE_REGIONS = [
+  { value: 'all',            label: 'All UAE',          query: 'UAE' },
+  { value: 'dubai',          label: 'Dubai',            query: 'Dubai' },
+  { value: 'abu-dhabi',      label: 'Abu Dhabi',        query: 'Abu Dhabi' },
+  { value: 'sharjah',        label: 'Sharjah',          query: 'Sharjah' },
+  { value: 'ajman',          label: 'Ajman',            query: 'Ajman' },
+  { value: 'ras-al-khaimah', label: 'Ras Al Khaimah',  query: 'Ras Al Khaimah' },
+  { value: 'fujairah',       label: 'Fujairah',         query: 'Fujairah' },
+  { value: 'umm-al-quwain',  label: 'Umm Al Quwain',   query: 'Umm Al Quwain' },
+  { value: 'remote',         label: 'Remote / WFH',    query: 'remote UAE' },
+  { value: 'mena',           label: 'MENA',             query: 'Middle East' },
 ]
 
 interface LiveJob {
@@ -20,16 +35,10 @@ interface LiveJob {
 
 const CSE_ID = '61294f5963fcd4a85'
 
-function loadCse() {
-  if (document.querySelector(`script[src*="${CSE_ID}"]`)) return
-  const s = document.createElement('script')
-  s.async = true
-  s.src = `https://cse.google.com/cse.js?cx=${CSE_ID}`
-  document.head.appendChild(s)
-}
-
 export default function ScanJobs() {
   const { showToast, pipeline, setPipeline, profile } = useApp()
+
+  // Auto/manual scan state
   const [scanning, setScanning] = useState(false)
   const [region, setRegion] = useState('all')
   const [visaOnly, setVisaOnly] = useState(false)
@@ -38,10 +47,66 @@ export default function ScanJobs() {
   const [method, setMethod] = useState<'auto' | 'manual' | 'google'>('auto')
   const [scanInfo, setScanInfo] = useState<{ scanned: number; ts: string } | null>(null)
 
-  // Load CSE script the first time the tab is activated
+  // Google CSE state
+  const [googleQuery, setGoogleQuery] = useState('')
+  const [googleRegion, setGoogleRegion] = useState('all')
+  const [cseLoaded, setCseLoaded] = useState(false)
+  const googleInputRef = useRef<HTMLInputElement>(null)
+
+  // Load CSE script on first switch to google tab
   useEffect(() => {
-    if (method === 'google') loadCse()
+    if (method !== 'google') return
+    if (document.querySelector(`script[src*="${CSE_ID}"]`)) {
+      setCseLoaded(true)
+      return
+    }
+    const s = document.createElement('script')
+    s.async = true
+    s.src = `https://cse.google.com/cse.js?cx=${CSE_ID}`
+    s.onload = () => setCseLoaded(true)
+    document.head.appendChild(s)
   }, [method])
+
+  // Programmatically trigger a CSE search with region injected into the query
+  const executeGoogleSearch = (q = googleQuery, r = googleRegion) => {
+    const trimmed = q.trim()
+    if (!trimmed) { googleInputRef.current?.focus(); return }
+
+    const regionObj = UAE_REGIONS.find(x => x.value === r) || UAE_REGIONS[0]
+    const fullQuery = `${trimmed} ${regionObj.query} jobs`
+
+    // Try the Google CSE programmatic API first
+    try {
+      const w = window as any
+      if (w.google?.search?.cse?.element) {
+        const elements = w.google.search.cse.element.getAllElements()
+        const keys = Object.keys(elements)
+        if (keys.length > 0) {
+          const el = elements[keys[0]]
+          el.clearAllResults()
+          el.execute(fullQuery)
+          return
+        }
+      }
+    } catch { /* fall through to DOM method */ }
+
+    // Fallback: set CSE's hidden input value and click its search button
+    const input = document.querySelector('.cse-wrap input.gsc-input') as HTMLInputElement | null
+    const btn = document.querySelector('.cse-wrap button.gsc-search-button-v2, .cse-wrap button.gsc-search-button') as HTMLElement | null
+    if (input && btn) {
+      // Some browsers need a native setter to bypass React-style value tracking
+      const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')?.set
+      if (setter) setter.call(input, fullQuery)
+      else input.value = fullQuery
+      input.dispatchEvent(new Event('input', { bubbles: true }))
+      btn.click()
+    }
+  }
+
+  const handleRegionChange = (r: string) => {
+    setGoogleRegion(r)
+    if (googleQuery.trim()) executeGoogleSearch(googleQuery, r)
+  }
 
   const regionLabel = REGIONS.find(r => r.value === region)?.label || 'All UAE'
 
@@ -70,9 +135,7 @@ export default function ScanJobs() {
       }
 
       if (visaOnly) {
-        jobs = jobs.filter(j =>
-          /sponsor|visa|relocation|expat/i.test(j.title + ' ' + j.location)
-        )
+        jobs = jobs.filter(j => /sponsor|visa|relocation|expat/i.test(j.title + ' ' + j.location))
       }
 
       setResults(jobs)
@@ -139,9 +202,9 @@ export default function ScanJobs() {
         </p>
       </div>
 
-      {/* ── Method tabs ────────────────────────────────────────── */}
+      {/* ── Method selector ─────────────────────────────────────── */}
       <div className="card" style={{ padding: '20px 22px', marginBottom: 20 }}>
-        <div style={{ display: 'flex', gap: 8, marginBottom: method === 'google' ? 0 : 16 }}>
+        <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
           <button className={`btn btn-xs ${method === 'auto' ? 'btn-primary' : 'btn-ghost'}`} onClick={() => setMethod('auto')}>Auto Scan</button>
           <button className={`btn btn-xs ${method === 'manual' ? 'btn-primary' : 'btn-ghost'}`} onClick={() => setMethod('manual')}>Manual Paste</button>
           <button className={`btn btn-xs ${method === 'google' ? 'btn-primary' : 'btn-ghost'}`} onClick={() => setMethod('google')}>
@@ -150,6 +213,7 @@ export default function ScanJobs() {
           </button>
         </div>
 
+        {/* ── Auto Scan controls ─────────────────────────────────── */}
         {method === 'auto' && (
           <>
             <div style={{ display: 'flex', gap: 16, marginBottom: 16, flexWrap: 'wrap', alignItems: 'flex-start' }}>
@@ -179,6 +243,7 @@ export default function ScanJobs() {
           </>
         )}
 
+        {/* ── Manual Paste controls ──────────────────────────────── */}
         {method === 'manual' && (
           <>
             <div style={{ marginBottom: 16 }}>
@@ -190,28 +255,58 @@ export default function ScanJobs() {
                 style={{ width: '100%', minHeight: 100, padding: 10, fontSize: 13, fontFamily: 'inherit', border: '1px solid var(--border)', borderRadius: 6, background: 'var(--bg)', color: 'var(--text)', resize: 'vertical' }} />
             </div>
             <button className="btn btn-primary" onClick={triggerManualScan}
-              disabled={scanning || !manualInput.trim()}
-              style={{ opacity: scanning ? 0.6 : 1 }}>
+              disabled={scanning || !manualInput.trim()} style={{ opacity: scanning ? 0.6 : 1 }}>
               {scanning ? 'Analyzing…' : 'Analyze Jobs'}
             </button>
           </>
         )}
+
+        {/* ── UAE Google Search controls ─────────────────────────── */}
+        {method === 'google' && (
+          <div>
+            {/* Region chips — all emirates */}
+            <div style={{ marginBottom: 12 }}>
+              <label style={{ fontSize: 11, fontWeight: 600, letterSpacing: 0.5, textTransform: 'uppercase', display: 'block', marginBottom: 6, color: 'var(--text-faint)' }}>Region</label>
+              <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                {UAE_REGIONS.map(r => (
+                  <button key={r.value}
+                    className={`btn btn-xs ${googleRegion === r.value ? 'btn-primary' : 'btn-ghost'}`}
+                    onClick={() => handleRegionChange(r.value)}
+                    style={{ fontSize: 11.5 }}>
+                    {r.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Search input */}
+            <div style={{ display: 'flex', gap: 8 }}>
+              <input
+                ref={googleInputRef}
+                className="form-input"
+                value={googleQuery}
+                onChange={e => setGoogleQuery(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && executeGoogleSearch()}
+                placeholder={`e.g. "Data Analyst" or "IT Specialist"${googleRegion !== 'all' ? ` — filtered to ${UAE_REGIONS.find(r => r.value === googleRegion)?.label}` : ''}`}
+                style={{ flex: 1 }}
+              />
+              <button className="btn btn-primary" onClick={() => executeGoogleSearch()}
+                style={{ flexShrink: 0 }}>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                Search
+              </button>
+            </div>
+
+            {!cseLoaded && (
+              <div style={{ fontSize: 12, color: 'var(--text-faint)', marginTop: 8 }}>Loading search engine…</div>
+            )}
+          </div>
+        )}
       </div>
 
-      {/* ── Google CSE Widget — always mounted, shown only on 'google' tab ── */}
-      <div style={{ display: method === 'google' ? 'block' : 'none' }} className="card cse-wrap">
-        <div style={{ padding: '16px 20px 6px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 10 }}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <span style={{ fontFamily: "'Space Grotesk',sans-serif", fontSize: 13.5, fontWeight: 600, color: 'var(--text)' }}>
-            UAE Job Search
-          </span>
-          <span style={{ fontSize: 11, color: 'var(--text-faint)', marginLeft: 4 }}>
-            powered by your Google Custom Search Engine
-          </span>
-        </div>
-        <div style={{ padding: '18px 20px 20px' }}>
-          <div className="gcse-search"></div>
-        </div>
+      {/* ── Google CSE results — always mounted, shown only on 'google' tab ── */}
+      <div style={{ display: method === 'google' ? 'block' : 'none' }} className="cse-wrap">
+        <div className="gcse-search"></div>
       </div>
 
       {/* ── Scanning spinner (auto/manual only) ─────────────────── */}

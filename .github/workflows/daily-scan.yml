@@ -1,0 +1,77 @@
+name: Daily UAE Job Scan
+
+on:
+  schedule:
+    # 06:00 UAE time (GST = UTC+4) = 02:00 UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch: # allow manual trigger from GitHub UI
+
+permissions:
+  contents: write
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Restore portals config from secret
+        # portals.yml is gitignored (user data) — stored as a GitHub secret.
+        # To set it up: go to Settings → Secrets → Actions → New repository secret
+        # Name: PORTALS_YML  Value: paste the full contents of your portals.yml
+        run: |
+          if [ -n "$PORTALS_YML" ]; then
+            echo "$PORTALS_YML" > portals.yml
+            echo "portals.yml restored from secret."
+          else
+            echo "::error::PORTALS_YML secret is not set. Go to Settings → Secrets → Actions and add it."
+            exit 1
+          fi
+        env:
+          PORTALS_YML: ${{ secrets.PORTALS_YML }}
+
+      - name: Restore pipeline inbox
+        # Create data/pipeline.md if it doesn't exist yet (gitignored user data)
+        run: |
+          if [ ! -f data/pipeline.md ]; then
+            mkdir -p data
+            cat > data/pipeline.md << 'EOF'
+          # Pipeline — Pending URLs
+
+          Jobs discovered by the daily scanner land here as checkboxes.
+
+          ## Pendientes
+
+          ## Procesadas
+          EOF
+            echo "data/pipeline.md initialized."
+          fi
+
+      - name: Run portal scan
+        # scan.mjs hits ATS APIs (Greenhouse, Ashby, Lever) directly — zero LLM tokens.
+        # WebSearch-based queries in portals.yml are skipped automatically in CI.
+        run: node scan.mjs
+
+      - name: Commit new jobs to pipeline
+        run: |
+          git config user.name  "career-ops[bot]"
+          git config user.email "career-ops[bot]@users.noreply.github.com"
+          git add -f data/pipeline.md data/scan-history.tsv 2>/dev/null || true
+          git diff --cached --quiet && echo "No new jobs found." || git commit -m "scan: daily UAE job scan $(date -u +%Y-%m-%d)"
+
+      - name: Push results
+        run: git push

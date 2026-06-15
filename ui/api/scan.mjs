@@ -37,7 +37,9 @@ export default async function handler(req: any, res: any) {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  const { deepseekKey, portals, profile } = req.body || {}
+  // Use client-provided key or fall back to server env var
+  const { deepseekKey: clientKey, portals, profile } = req.body || {}
+  const deepseekKey = clientKey || process.env.DEEPSEEK_API_KEY || ''
   const positiveKws = portals?.positiveKeywords || ['Data Analyst', 'IT Specialist']
   const negativeKws = portals?.negativeKeywords || ['Senior', 'Lead', 'Manager']
 
@@ -113,13 +115,13 @@ export default async function handler(req: any, res: any) {
   if (deepseekKey && sorted.length > 0) {
     try {
       const enhanced = await deepseekEnhance(sorted, deepseekKey, profile)
-      return res.json({ jobs: enhanced, count: enhanced.length, source: 'deepseek' })
+      return res.json({ jobs: enhanced, count: enhanced.length, source: 'deepseek', deepseek: true })
     } catch {
       // Fall through to return raw results
     }
   }
 
-  return res.json({ jobs: sorted, count: sorted.length, source: 'scraped' })
+  return res.json({ jobs: sorted, count: sorted.length, source: deepseekKey ? 'deepseek' : 'scraped', deepseek: !!deepseekKey })
 }
 
 function parseJobListings(html: string, source: string): any[] {

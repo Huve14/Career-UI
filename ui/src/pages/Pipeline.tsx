@@ -73,6 +73,9 @@ export default function Pipeline() {
               </div>
               <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
                 <button className="btn btn-primary btn-xs" onClick={() => evaluate(item.url)}>Evaluate</button>
+                <a href={item.url} target="_blank" rel="noopener noreferrer" className="btn btn-xs" style={{ background: 'var(--accent-green, #22c55e)', color: '#fff', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                  Apply ↗
+                </a>
                 <button className="btn btn-danger btn-xs" onClick={() => removeUrl(item.id)}>Remove</button>
               </div>
             </div>

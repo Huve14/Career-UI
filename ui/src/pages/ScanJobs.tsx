@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useApp } from '../lib/context'
 
-// Regions for Auto Scan tab
 const REGIONS = [
   { value: 'all', label: 'All UAE' },
   { value: 'dubai', label: 'Dubai' },
@@ -10,18 +9,17 @@ const REGIONS = [
   { value: 'remote', label: 'Remote / WFH' },
 ]
 
-// All UAE emirates + broader options for Google Search tab
-const UAE_REGIONS = [
-  { value: 'all',            label: 'All UAE',          query: 'UAE' },
-  { value: 'dubai',          label: 'Dubai',            query: 'Dubai' },
-  { value: 'abu-dhabi',      label: 'Abu Dhabi',        query: 'Abu Dhabi' },
-  { value: 'sharjah',        label: 'Sharjah',          query: 'Sharjah' },
-  { value: 'ajman',          label: 'Ajman',            query: 'Ajman' },
-  { value: 'ras-al-khaimah', label: 'Ras Al Khaimah',  query: 'Ras Al Khaimah' },
-  { value: 'fujairah',       label: 'Fujairah',         query: 'Fujairah' },
-  { value: 'umm-al-quwain',  label: 'Umm Al Quwain',   query: 'Umm Al Quwain' },
-  { value: 'remote',         label: 'Remote / WFH',    query: 'remote UAE' },
-  { value: 'mena',           label: 'MENA',             query: 'Middle East' },
+const UAE_SEARCH_REGIONS = [
+  { value: 'all',            label: 'All UAE',         query: 'UAE' },
+  { value: 'dubai',          label: 'Dubai',           query: 'Dubai' },
+  { value: 'abu-dhabi',      label: 'Abu Dhabi',       query: 'Abu Dhabi' },
+  { value: 'sharjah',        label: 'Sharjah',         query: 'Sharjah' },
+  { value: 'ajman',          label: 'Ajman',           query: 'Ajman' },
+  { value: 'ras-al-khaimah', label: 'Ras Al Khaimah', query: 'Ras Al Khaimah' },
+  { value: 'fujairah',       label: 'Fujairah',        query: 'Fujairah' },
+  { value: 'umm-al-quwain',  label: 'Umm Al Quwain',  query: 'Umm Al Quwain' },
+  { value: 'remote',         label: 'Remote / WFH',   query: 'remote UAE' },
+  { value: 'mena',           label: 'MENA',            query: 'Middle East' },
 ]
 
 interface LiveJob {
@@ -38,74 +36,61 @@ const CSE_ID = '61294f5963fcd4a85'
 export default function ScanJobs() {
   const { showToast, pipeline, setPipeline, profile } = useApp()
 
-  // Auto/manual scan state
+  // Auto/manual scan
   const [scanning, setScanning] = useState(false)
   const [region, setRegion] = useState('all')
   const [visaOnly, setVisaOnly] = useState(false)
   const [results, setResults] = useState<LiveJob[]>([])
   const [manualInput, setManualInput] = useState('')
-  const [method, setMethod] = useState<'auto' | 'manual' | 'google'>('auto')
+  const [method, setMethod] = useState<'auto' | 'manual'>('auto')
   const [scanInfo, setScanInfo] = useState<{ scanned: number; ts: string } | null>(null)
 
-  // Google CSE state
+  // Custom Search Engine
+  const [cseLoaded, setCseLoaded] = useState(false)
   const [googleQuery, setGoogleQuery] = useState('')
   const [googleRegion, setGoogleRegion] = useState('all')
-  const [cseLoaded, setCseLoaded] = useState(false)
   const googleInputRef = useRef<HTMLInputElement>(null)
 
-  // Load CSE script on first switch to google tab
   useEffect(() => {
-    if (method !== 'google') return
-    if (document.querySelector(`script[src*="${CSE_ID}"]`)) {
-      setCseLoaded(true)
-      return
-    }
-    // Force inline (non-overlay) results mode before the script parses the DOM
+    if (document.querySelector(`script[src*="${CSE_ID}"]`)) { setCseLoaded(true); return }
     ;(window as any).__gcse = { parsetags: 'auto' }
     const s = document.createElement('script')
     s.async = true
     s.src = `https://cse.google.com/cse.js?cx=${CSE_ID}`
     s.onload = () => setCseLoaded(true)
     document.head.appendChild(s)
-  }, [method])
+  }, [])
 
-  // Programmatically trigger a CSE search with region injected into the query
   const executeGoogleSearch = (q = googleQuery, r = googleRegion) => {
     const trimmed = q.trim()
     if (!trimmed) { googleInputRef.current?.focus(); return }
-
-    const regionObj = UAE_REGIONS.find(x => x.value === r) || UAE_REGIONS[0]
+    const regionObj = UAE_SEARCH_REGIONS.find(x => x.value === r) || UAE_SEARCH_REGIONS[0]
     const fullQuery = `${trimmed} ${regionObj.query} jobs`
 
-    // Try the Google CSE programmatic API first
     try {
       const w = window as any
       if (w.google?.search?.cse?.element) {
         const elements = w.google.search.cse.element.getAllElements()
         const keys = Object.keys(elements)
         if (keys.length > 0) {
-          const el = elements[keys[0]]
-          el.clearAllResults()
-          el.execute(fullQuery)
+          elements[keys[0]].clearAllResults()
+          elements[keys[0]].execute(fullQuery)
           return
         }
       }
-    } catch { /* fall through to DOM method */ }
+    } catch { /* fall through */ }
 
-    // Fallback: set CSE's hidden input value and click its search button
     const input = document.querySelector('.cse-wrap input.gsc-input') as HTMLInputElement | null
     const btn = document.querySelector('.cse-wrap button.gsc-search-button-v2, .cse-wrap button.gsc-search-button') as HTMLElement | null
     if (input && btn) {
-      // Some browsers need a native setter to bypass React-style value tracking
       const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')?.set
-      if (setter) setter.call(input, fullQuery)
-      else input.value = fullQuery
+      if (setter) setter.call(input, fullQuery); else input.value = fullQuery
       input.dispatchEvent(new Event('input', { bubbles: true }))
       btn.click()
     }
   }
 
-  const handleRegionChange = (r: string) => {
+  const handleGoogleRegionChange = (r: string) => {
     setGoogleRegion(r)
     if (googleQuery.trim()) executeGoogleSearch(googleQuery, r)
   }
@@ -194,6 +179,8 @@ export default function ScanJobs() {
 
   return (
     <div className="view-wrap" style={{ padding: '36px 40px', maxWidth: 900 }}>
+
+      {/* ── Header ──────────────────────────────────────────────── */}
       <div style={{ marginBottom: 28 }}>
         <h1 style={{ fontFamily: "'Space Grotesk',sans-serif", fontSize: 26, fontWeight: 700, color: 'var(--text)', letterSpacing: -0.5, margin: '0 0 5px' }}>
           Scan Jobs
@@ -204,18 +191,13 @@ export default function ScanJobs() {
         </p>
       </div>
 
-      {/* ── Method selector ─────────────────────────────────────── */}
+      {/* ── Auto / Manual scan card ─────────────────────────────── */}
       <div className="card" style={{ padding: '20px 22px', marginBottom: 20 }}>
         <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
           <button className={`btn btn-xs ${method === 'auto' ? 'btn-primary' : 'btn-ghost'}`} onClick={() => setMethod('auto')}>Auto Scan</button>
           <button className={`btn btn-xs ${method === 'manual' ? 'btn-primary' : 'btn-ghost'}`} onClick={() => setMethod('manual')}>Manual Paste</button>
-          <button className={`btn btn-xs ${method === 'google' ? 'btn-primary' : 'btn-ghost'}`} onClick={() => setMethod('google')}>
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            UAE Search
-          </button>
         </div>
 
-        {/* ── Auto Scan controls ─────────────────────────────────── */}
         {method === 'auto' && (
           <>
             <div style={{ display: 'flex', gap: 16, marginBottom: 16, flexWrap: 'wrap', alignItems: 'flex-start' }}>
@@ -245,7 +227,6 @@ export default function ScanJobs() {
           </>
         )}
 
-        {/* ── Manual Paste controls ──────────────────────────────── */}
         {method === 'manual' && (
           <>
             <div style={{ marginBottom: 16 }}>
@@ -262,57 +243,10 @@ export default function ScanJobs() {
             </button>
           </>
         )}
-
-        {/* ── UAE Google Search controls ─────────────────────────── */}
-        {method === 'google' && (
-          <div>
-            {/* Region chips — all emirates */}
-            <div style={{ marginBottom: 12 }}>
-              <label style={{ fontSize: 11, fontWeight: 600, letterSpacing: 0.5, textTransform: 'uppercase', display: 'block', marginBottom: 6, color: 'var(--text-faint)' }}>Region</label>
-              <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-                {UAE_REGIONS.map(r => (
-                  <button key={r.value}
-                    className={`btn btn-xs ${googleRegion === r.value ? 'btn-primary' : 'btn-ghost'}`}
-                    onClick={() => handleRegionChange(r.value)}
-                    style={{ fontSize: 11.5 }}>
-                    {r.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Search input */}
-            <div style={{ display: 'flex', gap: 8 }}>
-              <input
-                ref={googleInputRef}
-                className="form-input"
-                value={googleQuery}
-                onChange={e => setGoogleQuery(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && executeGoogleSearch()}
-                placeholder={`e.g. "Data Analyst" or "IT Specialist"${googleRegion !== 'all' ? ` — filtered to ${UAE_REGIONS.find(r => r.value === googleRegion)?.label}` : ''}`}
-                style={{ flex: 1 }}
-              />
-              <button className="btn btn-primary" onClick={() => executeGoogleSearch()}
-                style={{ flexShrink: 0 }}>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                Search
-              </button>
-            </div>
-
-            {!cseLoaded && (
-              <div style={{ fontSize: 12, color: 'var(--text-faint)', marginTop: 8 }}>Loading search engine…</div>
-            )}
-          </div>
-        )}
       </div>
 
-      {/* ── Google CSE results — always mounted, shown only on 'google' tab ── */}
-      <div style={{ display: method === 'google' ? 'block' : 'none' }} className="cse-wrap">
-        <div className="gcse-searchresults-only"></div>
-      </div>
-
-      {/* ── Scanning spinner (auto/manual only) ─────────────────── */}
-      {scanning && method !== 'google' && (
+      {/* ── Scanning spinner ─────────────────────────────────────── */}
+      {scanning && (
         <div style={{ textAlign: 'center', padding: '64px 24px' }}>
           <div style={{ width: 40, height: 40, border: '3px solid var(--border)', borderTopColor: 'var(--accent)', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 18px' }} />
           <div style={{ fontFamily: "'Space Grotesk',sans-serif", fontSize: 15, fontWeight: 600, color: 'var(--text)', marginBottom: 6 }}>
@@ -324,9 +258,9 @@ export default function ScanJobs() {
         </div>
       )}
 
-      {/* ── Results (auto/manual only) ───────────────────────────── */}
-      {results.length > 0 && !scanning && method !== 'google' && (
-        <div className="card">
+      {/* ── Auto/Manual results ──────────────────────────────────── */}
+      {results.length > 0 && !scanning && (
+        <div className="card" style={{ marginBottom: 32 }}>
           <div style={{ padding: '14px 20px 13px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
             <span style={{ fontFamily: "'Space Grotesk',sans-serif", fontSize: 14, fontWeight: 600, color: 'var(--text)' }}>
               {results.length} matching jobs
@@ -337,7 +271,6 @@ export default function ScanJobs() {
               </span>
             )}
           </div>
-
           {results.map(job => (
             <div key={job.id} className="scan-row" style={{ alignItems: 'flex-start', gap: 12 }}>
               <div style={{ width: 8, height: 8, borderRadius: '50%', background: job.score ? scoreColor(job.score) : 'var(--accent)', marginTop: 6, flexShrink: 0 }} />
@@ -374,6 +307,62 @@ export default function ScanJobs() {
           ))}
         </div>
       )}
+
+      {/* ══ Custom Search Engine ════════════════════════════════════ */}
+      <div style={{ marginBottom: 10 }}>
+        <h2 style={{ fontFamily: "'Space Grotesk',sans-serif", fontSize: 18, fontWeight: 700, color: 'var(--text)', letterSpacing: -0.3, margin: '0 0 4px' }}>
+          Custom Search Engine
+        </h2>
+        <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '0 0 16px' }}>
+          Search across UAE job boards via your Google Custom Search Engine.
+        </p>
+      </div>
+
+      <div className="card" style={{ padding: '20px 22px', marginBottom: 16 }}>
+        {/* Region chips */}
+        <div style={{ marginBottom: 12 }}>
+          <label style={{ fontSize: 11, fontWeight: 600, letterSpacing: 0.5, textTransform: 'uppercase', display: 'block', marginBottom: 6, color: 'var(--text-faint)' }}>Region</label>
+          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+            {UAE_SEARCH_REGIONS.map(r => (
+              <button key={r.value}
+                className={`btn btn-xs ${googleRegion === r.value ? 'btn-primary' : 'btn-ghost'}`}
+                onClick={() => handleGoogleRegionChange(r.value)}
+                style={{ fontSize: 11.5 }}>
+                {r.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Search input */}
+        <div style={{ display: 'flex', gap: 8 }}>
+          <input
+            ref={googleInputRef}
+            className="form-input"
+            value={googleQuery}
+            onChange={e => setGoogleQuery(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && executeGoogleSearch()}
+            placeholder={`e.g. "Data Analyst" or "IT Specialist"${googleRegion !== 'all' ? ` — ${UAE_SEARCH_REGIONS.find(r => r.value === googleRegion)?.label}` : ' — All UAE'}`}
+            style={{ flex: 1 }}
+          />
+          <button className="btn btn-primary" onClick={() => executeGoogleSearch()} style={{ flexShrink: 0 }}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            Search
+          </button>
+        </div>
+
+        {!cseLoaded && (
+          <div style={{ fontSize: 12, color: 'var(--text-faint)', marginTop: 8 }}>Loading search engine…</div>
+        )}
+      </div>
+
+      {/* CSE results rendered inline */}
+      <div className="cse-wrap">
+        <div className="gcse-searchresults-only"></div>
+      </div>
+
     </div>
   )
 }

@@ -2,51 +2,18 @@ import { useState } from 'react'
 import { useApp } from '../lib/context'
 
 export default function ProfilePage() {
-  const { profile, refresh, showToast } = useApp()
+  const { profile, setProfile, showToast } = useApp()
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState({ ...profile })
 
   const saveProfile = async () => {
-    // Write back to profile.yml
-    const yaml = `# Career-Ops Profile Configuration
-candidate:
-  full_name: "${draft.name}"
-  email: "${draft.email}"
-  phone: "${draft.phone}"
-  location: "${draft.location}"
-  linkedin: "${draft.linkedin}"
-  portfolio_url: "${draft.portfolioUrl}"
-
-target_roles:
-  primary:
-    - "${draft.targetRoles.split(',').map(r => r.trim()).join('"\n    - "')}"
-
-narrative:
-  headline: "${draft.headline}"
-  exit_story: "${draft.narrative}"
-  superpowers:
-${draft.superpowers.map(s => `    - "${s}"`).join('\n')}
-
-compensation:
-  target_range: "Negotiable"
-  currency: "AED"
-  minimum: "Negotiable"
-  location_flexibility: "Open to Abu Dhabi, Dubai, wider UAE"
-
-location:
-  country: "South Africa"
-  city: "Johannesburg"
-  timezone: "SAST"
-  visa_status: "${draft.visaStatus}"`
-
-    const result = await window.careerOps.writeFile('config/profile.yml', yaml)
-    if (result.error) {
-      showToast('Error saving profile: ' + result.error)
-      return
+    try {
+      await setProfile(draft)
+      setEditing(false)
+      showToast('Profile saved')
+    } catch (err) {
+      showToast('Error saving profile')
     }
-    setEditing(false)
-    await refresh()
-    showToast('Profile saved to config/profile.yml')
   }
 
   const cancelEdit = () => {

@@ -1,30 +1,247 @@
-import type { Application, PipelineItem, FollowUp, Profile, PortalConfig, ScanResult } from '../types'
+import type { Application, PipelineItem, FollowUp, Profile, PortalConfig } from '../types'
 
-const co = window.careerOps
+// ── Storage Adapter ────────────────────────────────────────────
+// Auto-detects Electron vs browser environment
 
-// ── File Read/Write Helpers ───────────────────────────────────
+const isElectron = !!(window.careerOps?.readFile)
 
-async function readFile(path: string): Promise<string> {
-  const result = await co.readFile(path)
+const STORAGE_KEY = 'career-ops-data'
+
+interface StorageData {
+  applications: Application[]
+  pipeline: PipelineItem[]
+  followUps: FollowUp[]
+  profile: Profile
+  portals: PortalConfig
+  cv: string
+}
+
+export function getDefaultData(): StorageData {
+  return {
+    applications: [],
+    pipeline: [],
+    followUps: [],
+    profile: {} as Profile,
+    portals: { positiveKeywords: [], negativeKeywords: [], companies: [] },
+    cv: '# Your CV\n\nPaste your CV here in Markdown format...\n',
+  }
+}
+
+export function loadStorage(): StorageData {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    if (raw) return JSON.parse(raw)
+  } catch { /* ignore */ }
+  return getDefaultData()
+}
+
+export function saveStorage(data: StorageData): void {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+}
+
+// ── Electron File Helpers ──────────────────────────────────────
+
+async function electronReadFile(path: string): Promise<string> {
+  const result = await window.careerOps!.readFile(path)
   if (result.error) throw new Error(result.error)
   return result.content || ''
 }
 
-async function writeFile(path: string, content: string): Promise<void> {
-  const result = await co.writeFile(path, content)
+async function electronWriteFile(path: string, content: string): Promise<void> {
+  const result = await window.careerOps!.writeFile(path, content)
   if (result.error) throw new Error(result.error)
 }
 
 // ── Applications ──────────────────────────────────────────────
 
 export async function loadApplications(): Promise<Application[]> {
-  try {
-    const content = await readFile('data/applications.md')
-    return parseApplicationsTable(content)
-  } catch {
-    return []
+  if (isElectron) {
+    try {
+      const content = await electronReadFile('data/applications.md')
+      return parseApplicationsTable(content)
+    } catch { return [] }
+  }
+  return loadStorage().applications
+}
+
+export async function saveApplications(apps: Application[]): Promise<void> {
+  if (isElectron) {
+    const header = '| # | Date | Company | Role | Score | Status | PDF | Report | Notes |\n|---|------|---------|------|-------|--------|-----|--------|-------|'
+    const rows = apps.map(a =>
+      `| ${a.id} | ${a.date} | ${a.company} | ${a.role} | ${a.score} | ${a.status} | ${a.pdf ? '✅' : '❌'} | ${a.report} | ${a.notes} |`
+    )
+    await electronWriteFile('data/applications.md', `# Applications Tracker\n\n${header}\n${rows.join('\n')}\n`)
+    return
+  }
+  const data = loadStorage()
+  data.applications = apps
+  saveStorage(data)
+}
+
+// ── Pipeline ──────────────────────────────────────────────────
+
+export async function loadPipeline(): Promise<PipelineItem[]> {
+  if (isElectron) {
+    try {
+      const content = await electronReadFile('data/pipeline.md')
+      return parsePipeline(content)
+    } catch { return [] }
+  }
+  return loadStorage().pipeline
+}
+
+export async function savePipeline(items: PipelineItem[]): Promise<void> {
+  if (isElectron) {
+    const urls = items.map(i => `- ${i.url}`).join('\n')
+    await electronWriteFile('data/pipeline.md', `# Pipeline Inbox\n\nPaste job URLs below to evaluate them:\n\n${urls}\n`)
+    return
+  }
+  const data = loadStorage()
+  data.pipeline = items
+  saveStorage(data)
+}
+
+// ── Follow-ups ────────────────────────────────────────────────
+
+export async function loadFollowUps(): Promise<FollowUp[]> {
+  if (isElectron) {
+    try {
+      const content = await electronReadFile('data/follow-ups.md')
+      return parseFollowUps(content)
+    } catch { return [] }
+  }
+  return loadStorage().followUps
+}
+
+export async function saveFollowUps(items: FollowUp[]): Promise<void> {
+  if (isElectron) {
+    const header = '| # | Company | Role | Date | Type | Notes |\n|---|---------|------|------|------|-------|'
+    const rows = items.map(f =>
+      `| ${f.id} | ${f.company} | ${f.role} | ${f.date} | ${f.type} | ${f.notes} |`
+    )
+    await electronWriteFile('data/follow-ups.md', `# Follow-up History\n\n${header}\n${rows.join('\n')}\n`)
+    return
+  }
+  const data = loadStorage()
+  data.followUps = items
+  saveStorage(data)
+}
+
+// ── Profile ───────────────────────────────────────────────────
+
+export async function loadProfile(): Promise<Profile> {
+  if (isElectron) {
+    try {
+      const content = await electronReadFile('config/profile.yml')
+      return parseProfileYaml(content)
+    } catch { return defaultProfile() }
+  }
+  return loadStorage().profile
+}
+
+export async function saveProfileYaml(profile: Profile): Promise<void> {
+  if (isElectron) {
+    const yaml = `# Career-Ops Profile Configuration
+candidate:
+  full_name: "${profile.name}"
+  email: "${profile.email}"
+  phone: "${profile.phone}"
+  location: "${profile.location}"
+  linkedin: "${profile.linkedin}"
+  portfolio_url: "${profile.portfolioUrl}"
+
+target_roles:
+  primary:
+${profile.targetRoles.split(',').map(r => `    - "${r.trim()}"`).join('\n')}
+
+narrative:
+  headline: "${profile.headline || ''}"
+  exit_story: "${profile.narrative || ''}"
+  superpowers:
+${profile.superpowers.map(s => `    - "${s}"`).join('\n')}
+
+compensation:
+  target_range: "Negotiable"
+  currency: "AED"
+  minimum: "Negotiable"
+  location_flexibility: "Open to Abu Dhabi, Dubai, wider UAE"
+
+location:
+  country: "South Africa"
+  city: "Johannesburg"
+  timezone: "SAST"
+  visa_status: "${profile.visaStatus}"`
+    await electronWriteFile('config/profile.yml', yaml)
+    return
+  }
+  const data = loadStorage()
+  data.profile = profile
+  saveStorage(data)
+}
+
+// ── CV ────────────────────────────────────────────────────────
+
+export async function loadCv(): Promise<string> {
+  if (isElectron) {
+    try { return await electronReadFile('cv.md') }
+    catch { return '# Your CV\n\nPaste your CV here...\n' }
+  }
+  return loadStorage().cv
+}
+
+export async function saveCv(content: string): Promise<void> {
+  if (isElectron) {
+    await electronWriteFile('cv.md', content)
+    return
+  }
+  const data = loadStorage()
+  data.cv = content
+  saveStorage(data)
+}
+
+// ── Portals ───────────────────────────────────────────────────
+
+export async function loadPortals(): Promise<PortalConfig> {
+  if (isElectron) {
+    try {
+      const content = await electronReadFile('portals.yml')
+      return parsePortalsYaml(content)
+    } catch { return { positiveKeywords: [], negativeKeywords: [], companies: [] } }
+  }
+  return loadStorage().portals
+}
+
+export async function savePortalsYaml(config: PortalConfig): Promise<void> {
+  if (!isElectron) {
+    const data = loadStorage()
+    data.portals = config
+    saveStorage(data)
   }
 }
+
+// ── Seed: Import career-ops file content manually (browser mode) ──
+
+export async function seedFromFiles(
+  applicationsContent?: string,
+  cvContent?: string,
+  profileYaml?: string,
+  pipelineContent?: string,
+  followUpsContent?: string,
+  portalsYaml?: string,
+): Promise<void> {
+  const data = getDefaultData()
+
+  if (applicationsContent) data.applications = parseApplicationsTable(applicationsContent)
+  if (cvContent) data.cv = cvContent
+  if (pipelineContent) data.pipeline = parsePipeline(pipelineContent)
+  if (followUpsContent) data.followUps = parseFollowUps(followUpsContent)
+  if (profileYaml) data.profile = parseProfileYaml(profileYaml)
+  if (portalsYaml) data.portals = parsePortalsYaml(portalsYaml)
+
+  saveStorage(data)
+}
+
+// ── Parsers (shared between Electron and browser modes) ───────
 
 function parseApplicationsTable(md: string): Application[] {
   const lines = md.split('\n').filter(l => l.trim().startsWith('|') && !l.includes('---') && !l.includes('| # |'))
@@ -46,25 +263,6 @@ function parseApplicationsTable(md: string): Application[] {
   }).filter(Boolean) as Application[]
 }
 
-export async function saveApplications(apps: Application[]): Promise<void> {
-  const header = '| # | Date | Company | Role | Score | Status | PDF | Report | Notes |\n|---|------|---------|------|-------|--------|-----|--------|-------|'
-  const rows = apps.map(a =>
-    `| ${a.id} | ${a.date} | ${a.company} | ${a.role} | ${a.score} | ${a.status} | ${a.pdf ? '✅' : '❌'} | ${a.report} | ${a.notes} |`
-  )
-  await writeFile('data/applications.md', `# Applications Tracker\n\n${header}\n${rows.join('\n')}\n`)
-}
-
-// ── Pipeline ──────────────────────────────────────────────────
-
-export async function loadPipeline(): Promise<PipelineItem[]> {
-  try {
-    const content = await readFile('data/pipeline.md')
-    return parsePipeline(content)
-  } catch {
-    return []
-  }
-}
-
 function parsePipeline(md: string): PipelineItem[] {
   const urls = md.split('\n').filter(l => l.trim().startsWith('- ') && l.includes('http'))
   return urls.map((u, i) => ({
@@ -72,22 +270,6 @@ function parsePipeline(md: string): PipelineItem[] {
     url: u.replace(/^-\s*/, '').trim(),
     added: new Date().toISOString().slice(0, 10),
   }))
-}
-
-export async function savePipeline(items: PipelineItem[]): Promise<void> {
-  const urls = items.map(i => `- ${i.url}`).join('\n')
-  await writeFile('data/pipeline.md', `# Pipeline Inbox\n\nPaste job URLs below to evaluate them:\n\n${urls}\n`)
-}
-
-// ── Follow-ups ────────────────────────────────────────────────
-
-export async function loadFollowUps(): Promise<FollowUp[]> {
-  try {
-    const content = await readFile('data/follow-ups.md')
-    return parseFollowUps(content)
-  } catch {
-    return []
-  }
 }
 
 function parseFollowUps(md: string): FollowUp[] {
@@ -109,32 +291,12 @@ function parseFollowUps(md: string): FollowUp[] {
   }).filter(Boolean) as FollowUp[]
 }
 
-export async function saveFollowUps(items: FollowUp[]): Promise<void> {
-  const header = '| # | Company | Role | Date | Type | Notes |\n|---|---------|------|------|------|-------|'
-  const rows = items.map(f =>
-    `| ${f.id} | ${f.company} | ${f.role} | ${f.date} | ${f.type} | ${f.notes} |`
-  )
-  await writeFile('data/follow-ups.md', `# Follow-up History\n\n${header}\n${rows.join('\n')}\n`)
-}
-
-// ── Profile ───────────────────────────────────────────────────
-
-export async function loadProfile(): Promise<Profile> {
-  try {
-    const content = await readFile('config/profile.yml')
-    return parseProfileYaml(content)
-  } catch {
-    return defaultProfile()
-  }
-}
-
 function parseProfileYaml(yml: string): Profile {
   const get = (key: string): string => {
     const re = new RegExp(`^${key}:\\s*["']?(.*?)["']?\\s*$`, 'm')
     const m = yml.match(re)
     return m ? m[1].replace(/^["']|["']$/g, '') : ''
   }
-
   const getList = (key: string): string[] => {
     const lines = yml.split('\n')
     const idx = lines.findIndex(l => l.trim() === `${key}:`)
@@ -148,7 +310,6 @@ function parseProfileYaml(yml: string): Profile {
     }
     return items
   }
-
   return {
     name: get('full_name'),
     email: get('email'),
@@ -168,44 +329,9 @@ function parseProfileYaml(yml: string): Profile {
 
 function defaultProfile(): Profile {
   return {
-    name: '',
-    email: '',
-    phone: '',
-    location: '',
-    linkedin: '',
-    portfolioUrl: '',
-    visaStatus: '',
-    targetRoles: '',
-    salaryMin: '',
-    salaryMax: '',
-    narrative: '',
-    headline: '',
-    superpowers: [],
-  }
-}
-
-// ── CV ────────────────────────────────────────────────────────
-
-export async function loadCv(): Promise<string> {
-  try {
-    return await readFile('cv.md')
-  } catch {
-    return '# Your CV\n\nPaste your CV here...\n'
-  }
-}
-
-export async function saveCv(content: string): Promise<void> {
-  await writeFile('cv.md', content)
-}
-
-// ── Portals ───────────────────────────────────────────────────
-
-export async function loadPortals(): Promise<PortalConfig> {
-  try {
-    const content = await readFile('portals.yml')
-    return parsePortalsYaml(content)
-  } catch {
-    return { positiveKeywords: [], negativeKeywords: [], companies: [] }
+    name: '', email: '', phone: '', location: '', linkedin: '', portfolioUrl: '',
+    visaStatus: '', targetRoles: '', salaryMin: '', salaryMax: '',
+    narrative: '', headline: '', superpowers: [],
   }
 }
 
@@ -213,17 +339,14 @@ function parsePortalsYaml(yml: string): PortalConfig {
   const positive: string[] = []
   const negative: string[] = []
   const companies: { name: string; url: string; enabled: boolean }[] = []
-
   let section = ''
-  let inTracked = false
 
   for (const line of yml.split('\n')) {
     const trimmed = line.trim()
-
     if (trimmed === 'title_filter:') { section = 'filter'; continue }
     if (trimmed === 'positive:') { section = 'positive'; continue }
     if (trimmed === 'negative:') { section = 'negative'; continue }
-    if (trimmed === 'tracked_companies:') { section = 'companies'; inTracked = true; continue }
+    if (trimmed === 'tracked_companies:') { section = 'companies'; continue }
 
     if (section === 'positive' && trimmed.startsWith('- ')) {
       positive.push(trimmed.slice(2).replace(/^["']|["']$/g, ''))
@@ -231,7 +354,6 @@ function parsePortalsYaml(yml: string): PortalConfig {
     if (section === 'negative' && trimmed.startsWith('- ')) {
       negative.push(trimmed.slice(2).replace(/^["']|["']$/g, ''))
     }
-
     if (section === 'companies' && trimmed === 'job_boards:') break
     if (section !== 'companies') continue
 
@@ -255,23 +377,27 @@ function parsePortalsYaml(yml: string): PortalConfig {
 
 // ── Reports ───────────────────────────────────────────────────
 
-export async function loadReports(): Promise<{ name: string; content: string }[]> {
-  try {
-    const { entries } = await co.listFiles('reports')
-    const mdFiles = entries.filter(e => !e.isDirectory && e.name.endsWith('.md'))
-    const reports = []
-    for (const f of mdFiles) {
-      try {
-        const content = await readFile(`reports/${f.name}`)
-        reports.push({ name: f.name, content })
-      } catch { /* skip */ }
-    }
-    return reports
-  } catch {
-    return []
+export async function loadReport(name: string): Promise<string> {
+  if (isElectron) {
+    return electronReadFile(`reports/${name}`)
   }
+  return ''
 }
 
-export async function loadReport(name: string): Promise<string> {
-  return readFile(`reports/${name}`)
+export async function loadReports(): Promise<{ name: string; content: string }[]> {
+  if (isElectron) {
+    try {
+      const { entries } = await window.careerOps!.listFiles('reports')
+      const mdFiles = entries.filter((e: { name: string; isDirectory: boolean }) => !e.isDirectory && e.name.endsWith('.md'))
+      const reports: { name: string; content: string }[] = []
+      for (const f of mdFiles) {
+        try {
+          const content = await electronReadFile(`reports/${f.name}`)
+          reports.push({ name: f.name, content })
+        } catch { /* skip */ }
+      }
+      return reports
+    } catch { return [] }
+  }
+  return []
 }

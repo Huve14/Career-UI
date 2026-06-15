@@ -10,6 +10,7 @@ import CoverLetter from './pages/CoverLetter'
 import Profile from './pages/Profile'
 import Portals from './pages/Portals'
 import Report from './pages/Report'
+import Settings from './pages/Settings'
 import { AppProvider, useApp } from './lib/context'
 
 function ToastDisplay() {
@@ -40,6 +41,7 @@ export default function App() {
             <Route path="/cover-letter" element={<CoverLetter />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/portals" element={<Portals />} />
+            <Route path="/settings" element={<Settings />} />
             <Route path="/report/:appId" element={<Report />} />
           </Routes>
         </main>

@@ -60,3 +60,4 @@ package-lock.json
 
 # Planning (local scratchpad)
 plan/
+ui/dist

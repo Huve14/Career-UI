@@ -61,3 +61,9 @@ package-lock.json
 # Planning (local scratchpad)
 plan/
 ui/dist
+
+# Supabase temp files
+supabase/.temp/
+
+# Vercel local
+ui/.vercel

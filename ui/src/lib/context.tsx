@@ -55,6 +55,19 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     user: null,
   })
 
+  // Restore session on mount and listen for auth changes
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setState(s => ({ ...s, user: session?.user ?? null, loading: !session }))
+      if (session) refresh()
+    })
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setState(s => ({ ...s, user: session?.user ?? null }))
+      if (session) refresh()
+    })
+    return () => subscription.unsubscribe()
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
   const showToast = useCallback((msg: string) => {
     setState(s => ({ ...s, toast: msg }))
     setTimeout(() => setState(s => ({ ...s, toast: '' })), 2800)

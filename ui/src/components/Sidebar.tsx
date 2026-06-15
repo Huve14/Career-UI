@@ -4,7 +4,12 @@ import { useApp } from '../lib/context'
 export default function Sidebar() {
   const navigate = useNavigate()
   const location = useLocation()
-  const { applications, pipeline, followUps, profile } = useApp()
+  const { applications, pipeline, followUps, profile, signOutSupabase, showToast } = useApp()
+
+  const handleSignOut = async () => {
+    await signOutSupabase()
+    showToast('Signed out')
+  }
 
   const path = location.pathname
   const go = (p: string) => () => navigate(p)
@@ -60,14 +65,24 @@ export default function Sidebar() {
       </nav>
 
       <div style={{ padding: '14px 12px', borderTop: '1px solid var(--border)', flexShrink: 0 }}>
-        <div onClick={go('/profile')} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: 10, borderRadius: 9, background: 'var(--surface2)', cursor: 'pointer' }}>
-          <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, color: '#fff', fontFamily: "'Space Grotesk',sans-serif", flexShrink: 0 }}>
-            {profile.name?.charAt(0) || '?'}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div onClick={go('/profile')} style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 9, background: 'var(--surface2)', cursor: 'pointer', minWidth: 0 }}>
+            <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, color: '#fff', fontFamily: "'Space Grotesk',sans-serif", flexShrink: 0 }}>
+              {profile.name?.charAt(0) || '?'}
+            </div>
+            <div style={{ overflow: 'hidden', minWidth: 0 }}>
+              <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)', fontFamily: "'DM Sans',sans-serif", whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{profile.name || 'Unnamed'}</div>
+              <div style={{ fontSize: 11, color: 'var(--text-faint)', fontFamily: "'DM Sans',sans-serif", whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{profile.location || 'No location set'}</div>
+            </div>
           </div>
-          <div style={{ overflow: 'hidden', minWidth: 0 }}>
-            <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)', fontFamily: "'DM Sans',sans-serif", whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{profile.name || 'Unnamed'}</div>
-            <div style={{ fontSize: 11, color: 'var(--text-faint)', fontFamily: "'DM Sans',sans-serif", whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{profile.location || 'No location set'}</div>
-          </div>
+          <button onClick={handleSignOut} title="Sign out"
+            style={{ flexShrink: 0, width: 32, height: 32, borderRadius: 8, border: '1px solid var(--border)', background: 'transparent', cursor: 'pointer', color: 'var(--text-faint)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+              <polyline points="16 17 21 12 16 7"></polyline>
+              <line x1="21" y1="12" x2="9" y2="12"></line>
+            </svg>
+          </button>
         </div>
       </div>
     </aside>

@@ -1,5 +1,5 @@
 // Vercel Serverless Function — /api/scan
-// Searches UAE job boards via Google Custom Search API.
+// Searches UAE job boards via Google Custom Search API (OAuth2 with service account).
 
 const REGION_MAP = {
   'all': 'United Arab Emirates',
@@ -10,7 +10,7 @@ const REGION_MAP = {
 }
 
 const GOOGLE_CX = process.env.GOOGLE_CX || ''
-const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY || ''
+const GOOGLE_SA_B64 = process.env.GOOGLE_SERVICE_ACCOUNT || ''
 const DEEPSEEK_KEY = process.env.DEEPSEEK_API_KEY || ''
 
 const SEARCH_SITES = 'ae.indeed.com OR gulftalent.com OR naukrigulf.com OR bayt.com OR monstergulf.com'
@@ -21,12 +21,44 @@ const VISA_KEYWORDS = [
   'international', 'expat', 'work permit',
 ]
 
+async function getAccessToken(saJSON) {
+  const { client_email, private_key } = saJSON
+  const now = Math.floor(Date.now() / 1000)
+  const header = { alg: 'RS256', typ: 'JWT' }
+  const payload = {
+    iss: client_email,
+    scope: 'https://www.googleapis.com/auth/cse',
+    aud: 'https://oauth2.googleapis.com/token',
+    exp: now + 3600,
+    iat: now,
+  }
+
+  const b64 = (obj) => Buffer.from(JSON.stringify(obj)).toString('base64url')
+  const signatureInput = `${b64(header)}.${b64(payload)}`
+  const sign = require('crypto').createSign('RSA-SHA256')
+  sign.update(signatureInput)
+  const signature = sign.sign(private_key, 'base64url')
+  const assertion = `${signatureInput}.${signature}`
+
+  const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+      assertion,
+    }),
+  })
+
+  const tokenData = await tokenRes.json()
+  return tokenData.access_token
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  if (!GOOGLE_API_KEY || !GOOGLE_CX) {
+  if (!GOOGLE_CX || !GOOGLE_SA_B64) {
     return res.status(500).json({ error: 'Google API not configured' })
   }
 
@@ -41,64 +73,71 @@ export default async function handler(req, res) {
   const regionLabel = REGION_MAP[region] || 'UAE'
   const locationTerm = region === 'remote' ? 'Remote' : regionLabel
 
-  // Build search queries
   const targetRoles = profile?.targetRoles
     ? profile.targetRoles.split(',').map(r => r.trim()).filter(Boolean)
     : ['Data Analyst', 'IT Specialist', 'BI Analyst']
 
-  for (const role of targetRoles) {
-    try {
-      const query = `${role} ${locationTerm} site:${SEARCH_SITES}`
-      const url = `https://www.googleapis.com/customsearch/v1?key=${GOOGLE_API_KEY}&cx=${GOOGLE_CX}&q=${encodeURIComponent(query)}&num=10`
-      const response = await fetch(url, { signal: AbortSignal.timeout(10000) })
-      if (!response.ok) continue
+  try {
+    // Decode service account and get OAuth2 token
+    const saJSON = JSON.parse(Buffer.from(GOOGLE_SA_B64, 'base64').toString('utf-8'))
+    const accessToken = await getAccessToken(saJSON)
 
-      const data = await response.json()
-      const items = data.items || []
-
-      for (const item of items) {
-        const title = item.title || ''
-        const link = item.link || ''
-        const snippet = item.snippet || ''
-
-        // Reject negative keywords
-        const titleLower = title.toLowerCase()
-        if (negativeKws.some(k => titleLower.includes(k.toLowerCase()))) continue
-
-        // Extract company from title (try "title at company" or "title - company" patterns)
-        const company = extractCompany(title, snippet)
-        const location = extractLocation(snippet, regionLabel)
-
-        const key = `${company}|${title}`
-        if (seen.has(key)) continue
-        seen.add(key)
-
-        const hasVisa = VISA_KEYWORDS.some(kw =>
-          `${title} ${snippet}`.toLowerCase().includes(kw)
-        )
-        if (visaSponsorship && !hasVisa) continue
-
-        const score = scoreJob(title, company, location, positiveKws, region, hasVisa, targetRoles)
-
-        results.push({
-          id: results.length + 1,
-          title,
-          company,
-          location: location || regionLabel,
-          score,
-          url: link,
-          source: extractSource(link),
-          visaSponsorship: hasVisa,
+    for (const role of targetRoles) {
+      try {
+        const query = `${role} ${locationTerm} site:${SEARCH_SITES}`
+        const url = `https://www.googleapis.com/customsearch/v1?cx=${GOOGLE_CX}&q=${encodeURIComponent(query)}&num=10`
+        const response = await fetch(url, {
+          headers: { Authorization: `Bearer ${accessToken}` },
+          signal: AbortSignal.timeout(10000),
         })
+        if (!response.ok) continue
+
+        const data = await response.json()
+        const items = data.items || []
+
+        for (const item of items) {
+          const title = item.title || ''
+          const link = item.link || ''
+          const snippet = item.snippet || ''
+
+          const titleLower = title.toLowerCase()
+          if (negativeKws.some(k => titleLower.includes(k.toLowerCase()))) continue
+
+          const company = extractCompany(title, snippet)
+          const location = extractLocation(snippet, regionLabel)
+
+          const key = `${company}|${title}`
+          if (seen.has(key)) continue
+          seen.add(key)
+
+          const hasVisa = VISA_KEYWORDS.some(kw =>
+            `${title} ${snippet}`.toLowerCase().includes(kw)
+          )
+          if (visaSponsorship && !hasVisa) continue
+
+          const score = scoreJob(title, company, location, positiveKws, region, hasVisa, targetRoles)
+
+          results.push({
+            id: results.length + 1,
+            title,
+            company,
+            location: location || regionLabel,
+            score,
+            url: link,
+            source: extractSource(link),
+            visaSponsorship: hasVisa,
+          })
+        }
+      } catch {
+        // Silently skip
       }
-    } catch {
-      // Silently skip
     }
+  } catch (err) {
+    return res.status(500).json({ error: 'Auth failed: ' + (err.message || 'unknown') })
   }
 
   const sorted = results.sort((a, b) => b.score - a.score).slice(0, 30)
 
-  // DeepSeek AI enhancement
   if (deepseekKey && sorted.length > 0) {
     try {
       const enhanced = await deepseekEnhance(sorted, deepseekKey, profile, region, visaSponsorship)
@@ -108,27 +147,16 @@ export default async function handler(req, res) {
     }
   }
 
-  return res.json({
-    jobs: sorted,
-    count: sorted.length,
-    source: 'google',
-    deepseek: !!deepseekKey,
-  })
+  return res.json({ jobs: sorted, count: sorted.length, source: 'google', deepseek: !!deepseekKey })
 }
 
 function extractCompany(title, snippet) {
-  // "Job Title at Company Name"
   const atMatch = title.match(/\bat\s+([^-]+)/i)
   if (atMatch) return atMatch[1].trim()
-
-  // "Job Title - Company Name"
   const dashMatch = title.match(/-\s*(.+)$/)
   if (dashMatch) return dashMatch[1].trim()
-
-  // Try snippet for company
   const snipCompany = snippet.match(/(?:at|by|with)\s+([A-Z][A-Za-z0-9\s&.]+?)(?:\s+-\s+|\s+in\s+|\.|$)/)
   if (snipCompany) return snipCompany[1].trim()
-
   return 'UAE Company'
 }
 
@@ -152,7 +180,6 @@ function extractSource(url) {
 
 function scoreJob(title, company, location, positiveKws, region, hasVisa, targetRoles) {
   let score = 50
-
   const titleLower = title.toLowerCase()
   const companyLower = company.toLowerCase()
   const locationLower = location.toLowerCase()
@@ -161,8 +188,6 @@ function scoreJob(title, company, location, positiveKws, region, hasVisa, target
     if (titleLower.includes(kw.toLowerCase())) score += 8
   }
 
-  // Region match
-  const regionLabel = REGION_MAP[region] || 'uae'
   if (region === 'all') {
     if (locationLower.includes('dubai')) score += 10
     if (locationLower.includes('abu dhabi')) score += 10

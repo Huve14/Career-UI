@@ -9,20 +9,21 @@ Run `/career-ops pipeline` to process pending items.
 <!-- Scanner appends new jobs here automatically -->
 
 - [ ] https://job-boards.greenhouse.io/anthropic/jobs/5255853008 | Anthropic | IT Systems Engineer, Client Platform Engineer
-- [ ] https://job-boards.greenhouse.io/anthropic/jobs/5161882008 | Anthropic | IT Systems Engineer, Enterprise SaaS
 - [ ] https://job-boards.greenhouse.io/runpod/jobs/5171627008 | RunPod | Technical Support Analyst (L2)
-- [ ] https://job-boards.greenhouse.io/arizeai/jobs/5997089004 | Arize AI | IT Support Specialist
 - [ ] https://jobs.ashbyhq.com/deepgram/ae992d89-1bb3-4bea-ae91-0a07043e9756 | Deepgram | Senior Data Intelligence Engineer
 - [ ] https://jobs.ashbyhq.com/synthesia/73b423b5-0fcc-422e-9490-0bb22bcd5a4e | Synthesia | Technical Support Associate
-- [ ] https://jobs.lever.co/mistral/cb2986cc-4768-40b9-9d67-e53d78b247dc | Mistral AI | Applied AI, Technical Lead, Forward Deployed AI Engineer - Abu Dhabi
-- [ ] https://jobs.ashbyhq.com/resend/7c0abe7b-04a4-4876-9803-7c07acc869d1 | Resend | Data Analyst, Trust & Safety
-- [ ] https://jobs.ashbyhq.com/supabase/3889002e-536e-4046-a330-70e942b0cc96 | Supabase | Database Support Engineer (EMEA)
-- [ ] https://jobs.ashbyhq.com/supabase/e7e19db2-8735-428b-bf22-c7109a3e336a | Supabase | Staff Data Analyst, GTM
 - [ ] https://job-boards.greenhouse.io/hightouch/jobs/5718912004 | Hightouch | Forward Deployed Marketing Data Scientist
 
 ## Procesadas
 
 <!-- Evaluated jobs are moved here -->
+
+- [x] https://jobs.lever.co/mistral/cb2986cc-4768-40b9-9d67-e53d78b247dc | Mistral AI | Forward Deployed AI Engineer - Abu Dhabi | **2.8/5** SKIP — PhD/MSc required, no LLM fine-tuning; monitor for IC-level posting
+- [x] https://job-boards.greenhouse.io/anthropic/jobs/5161882008 | Anthropic | IT Systems Engineer, Enterprise SaaS | **2.8/5** SKIP — needs GWS/Slack admin (M365-only CV), US-remote, 8+ YOE
+- [x] https://jobs.ashbyhq.com/resend/7c0abe7b-04a4-4876-9803-7c07acc869d1 | Resend | Data Analyst, Trust & Safety | **3.2/5** SKIP — Americas-only timezone hard blocker
+- [x] https://jobs.ashbyhq.com/supabase/e7e19db2-8735-428b-bf22-c7109a3e336a | Supabase | Staff Data Analyst, GTM | **3.0/5** SKIP — Staff level stretch, zero SaaS GTM domain; consider Senior DA role
+- [x] https://jobs.ashbyhq.com/supabase/3889002e-536e-4046-a330-70e942b0cc96 | Supabase | Database Support Engineer (EMEA) | **3.3/5** HOLD — EMEA TZ fits; PostgreSQL internals gap; upskill then reapply
+- [x] https://job-boards.greenhouse.io/arizeai/jobs/5997089004 | Arize AI | IT Support Specialist | **2.5/5** SKIP — US Bay Area on-site required, not international remote
 
 ## Descartadas (role/location mismatch)
 

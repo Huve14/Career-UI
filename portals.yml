@@ -1,0 +1,397 @@
+# Portal Scanner Configuration — UAE Job Market
+# Configured for the UAE / GCC / MENA region.
+# Run: /career-ops scan  (or  node scan.mjs)
+#
+# [CUSTOMIZE] Update title_filter.positive with YOUR target role keywords.
+# [CUSTOMIZE] Add your target companies to tracked_companies.
+
+# -- Location filter --
+# Focuses results on UAE and the broader GCC/MENA region.
+location_filter:
+  always_allow:
+    - "Dubai"
+    - "Abu Dhabi"
+    - "UAE"
+    - "United Arab Emirates"
+  allow:
+    - "Remote"
+    - "Dubai"
+    - "Abu Dhabi"
+    - "Sharjah"
+    - "UAE"
+    - "United Arab Emirates"
+    - "GCC"
+    - "MENA"
+    - "Gulf"
+    - "Saudi Arabia"
+    - "Riyadh"
+    - "Doha"
+    - "Qatar"
+    - "Bahrain"
+    - "Kuwait"
+  block:
+    - "India"
+    - "United States"
+    - "USA"
+    - "United Kingdom"
+    - "London"
+    - "Germany"
+    - "France"
+    - "Singapore"
+    - "Australia"
+    - "Brazil"
+    - "Canada"
+
+# -- Title filter --
+# [CUSTOMIZE] Replace / extend with YOUR target roles.
+# At least 1 positive must match AND 0 negatives must match.
+
+title_filter:
+  positive:
+    # Huveshan's target roles — Data / BI / IT / Automation
+    - "Data Analyst"
+    - "Business Intelligence"
+    - "BI Analyst"
+    - "BI Developer"
+    - "Data Engineer"
+    - "Analytics Engineer"
+    - "Reporting Analyst"
+    - "IT Specialist"
+    - "IT Manager"
+    - "Systems Administrator"
+    - "IT Administrator"
+    - "Cloud Administrator"
+    - "Microsoft 365"
+    - "M365"
+    - "Automation Engineer"
+    - "Automation Analyst"
+    - "Workflow Automation"
+    - "RPA"
+    - "Power BI"
+    - "Data Visualization"
+    - "ETL"
+    - "Data Warehouse"
+    - "SQL Developer"
+    - "AI Automation"
+    - "Solutions Architect"
+    - "Technical Analyst"
+    - "Digital Transformation"
+    - "Cybersecurity Analyst"
+    - "Information Security"
+    - "IT Infrastructure"
+  negative:
+    - "Intern"
+    - "Junior"
+    - "Trainee"
+    - "Blockchain"
+    - "Crypto"
+    - "Web3"
+    - "COBOL"
+    - "Mainframe"
+  seniority_boost:
+    - "Senior"
+    - "Lead"
+    - "Principal"
+    - "Staff"
+    - "Head"
+    - "Director"
+    - "Manager"
+
+# -- Search queries — UAE / GCC job portals --
+search_queries:
+
+  # -- LinkedIn UAE --
+  - name: LinkedIn — UAE Tech Roles
+    query: 'site:linkedin.com/jobs "UAE" OR "Dubai" OR "Abu Dhabi" ("Software Engineer" OR "AI Engineer" OR "Product Manager" OR "Solutions Architect")'
+    enabled: true
+
+  - name: LinkedIn — UAE Senior Tech
+    query: 'site:linkedin.com/jobs "Dubai" OR "UAE" (Senior OR Lead OR Head) ("Engineer" OR "Architect" OR "Manager")'
+    enabled: true
+
+  # -- Bayt.com (leading MENA job portal) --
+  - name: Bayt — Tech & Engineering
+    query: 'site:bayt.com "Software Engineer" OR "AI Engineer" OR "Cloud Engineer" OR "Data Engineer" Dubai OR "Abu Dhabi" OR UAE'
+    enabled: true
+
+  - name: Bayt — Product & Management
+    query: 'site:bayt.com "Product Manager" OR "Project Manager" OR "Solutions Architect" Dubai OR UAE'
+    enabled: true
+
+  # -- GulfTalent --
+  - name: GulfTalent — Tech Roles
+    query: 'site:gulftalent.com "Software Engineer" OR "IT Manager" OR "Data" OR "AI" UAE OR Dubai OR "Abu Dhabi"'
+    enabled: true
+
+  # -- Naukri Gulf --
+  - name: NaukriGulf — Engineering
+    query: 'site:naukrigulf.com "Software Engineer" OR "AI" OR "Cloud" OR "DevOps" Dubai OR UAE'
+    enabled: true
+
+  - name: NaukriGulf — Data & Analytics
+    query: 'site:naukrigulf.com "Data Scientist" OR "Data Engineer" OR "Analytics" OR "Machine Learning" UAE OR "GCC"'
+    enabled: true
+
+  # -- Indeed UAE --
+  - name: Indeed UAE — Tech
+    query: 'site:ae.indeed.com "Software Engineer" OR "AI Engineer" OR "Product Manager" OR "Solutions Architect"'
+    enabled: true
+
+  # -- Dubizzle (UAE classifieds + jobs) --
+  - name: Dubizzle Jobs — Tech
+    query: 'site:dubizzle.com/jobs "Software" OR "Engineer" OR "Developer" OR "IT" Dubai'
+    enabled: true
+
+  # -- GulfJobs / GulfJobSeeker --
+  - name: GulfJobSeeker — Engineering
+    query: 'site:gulfjobseeker.com "Software Engineer" OR "Developer" OR "IT" UAE OR Dubai'
+    enabled: true
+
+  # -- Greenhouse (companies with UAE offices) --
+  - name: Greenhouse — UAE / MENA
+    query: 'site:boards.greenhouse.io OR site:job-boards.greenhouse.io "Dubai" OR "UAE" OR "Abu Dhabi" OR "MENA"'
+    enabled: true
+
+  # -- Ashby — UAE / MENA --
+  - name: Ashby — UAE / MENA
+    query: 'site:jobs.ashbyhq.com "Dubai" OR "UAE" OR "Abu Dhabi" OR "MENA"'
+    enabled: true
+
+  # -- Lever — UAE --
+  - name: Lever — UAE Roles
+    query: 'site:jobs.lever.co "Dubai" OR "UAE" OR "Abu Dhabi" OR "MENA"'
+    enabled: true
+
+  # -- Remote + UAE/MENA friendly --
+  - name: Himalayas — Remote MENA
+    query: 'site:himalayas.app "MENA" OR "UAE" OR "Dubai" OR "Remote"'
+    enabled: true
+
+  - name: WeWorkRemotely — MENA friendly
+    query: 'site:weworkremotely.com "MENA" OR "UAE" OR "Gulf" OR "Middle East"'
+    enabled: true
+
+  # -- Tech-specific UAE --
+  - name: GITEX / UAE Tech Jobs
+    query: '"Dubai" OR "UAE" ("AI Engineer" OR "Machine Learning" OR "Cloud Architect" OR "DevOps") job 2025 OR 2026'
+    enabled: true
+
+  # -- Startups UAE --
+  - name: UAE Startups — YC / Global
+    query: 'site:workatastartup.com "UAE" OR "Dubai" OR "MENA" OR "Middle East"'
+    enabled: true
+
+  - name: UAE Startups — Wamda / MAGNiTT ecosystem
+    query: '"UAE" OR "Dubai" startup ("Software Engineer" OR "CTO" OR "VP Engineering" OR "Product Manager") job 2025 OR 2026'
+    enabled: true
+
+# -- Tracked companies with UAE / MENA presence --
+# [CUSTOMIZE] Add companies you specifically want to monitor.
+
+tracked_companies:
+
+  # -- UAE / GCC Tech Giants & Telcos --
+
+  - name: G42 (UAE AI company)
+    careers_url: https://careers.g42.ai/
+    scan_method: websearch
+    scan_query: 'site:careers.g42.ai OR "g42" "careers" job'
+    notes: "Abu Dhabi AI company backed by UAE government."
+    enabled: true
+
+  - name: Etisalat (e&)
+    careers_url: https://careers.eand.com/
+    scan_method: websearch
+    scan_query: 'site:careers.eand.com OR "e& careers" job engineer'
+    notes: "UAE largest telco, now e&."
+    enabled: true
+
+  - name: du (telecom)
+    careers_url: https://www.du.ae/careers
+    scan_method: websearch
+    scan_query: 'site:du.ae/careers OR "du telecom" careers engineer'
+    notes: "UAE second telco."
+    enabled: true
+
+  - name: ADNOC (energy + tech)
+    careers_url: https://careers.adnoc.ae/
+    scan_method: websearch
+    scan_query: 'site:careers.adnoc.ae "Software" OR "Data" OR "IT" OR "Digital"'
+    notes: "Abu Dhabi National Oil Company, large digital/tech hiring."
+    enabled: true
+
+  - name: Emirates (airline)
+    careers_url: https://careers.emiratesgroup.com/
+    scan_method: websearch
+    scan_query: 'site:careers.emiratesgroup.com "IT" OR "Technology" OR "Software" OR "Data"'
+    notes: "Emirates Group, large tech division."
+    enabled: true
+
+  - name: Mashreq Bank
+    careers_url: https://careers.mashreqbank.com/
+    scan_method: websearch
+    scan_query: 'site:mashreqbank.com/careers OR "mashreq" careers "Software" OR "Data" OR "Digital"'
+    notes: "UAE bank, strong fintech/digital transformation arm."
+    enabled: true
+
+  - name: ENOC (Energy)
+    careers_url: https://www.enoc.com/en/careers
+    scan_method: websearch
+    scan_query: 'site:enoc.com "careers" "IT" OR "Software" OR "Data" OR "Digital"'
+    enabled: true
+
+  - name: Noon (e-commerce)
+    careers_url: https://jobs.ashbyhq.com/noon
+    scan_method: websearch
+    scan_query: 'site:jobs.ashbyhq.com/noon OR "noon.com" careers engineer'
+    notes: "Dubai-based e-commerce platform."
+    enabled: true
+
+  - name: Careem (ride-hailing/super app)
+    careers_url: https://job-boards.greenhouse.io/careem
+    api: https://boards-api.greenhouse.io/v1/boards/careem/jobs
+    notes: "Dubai super app, Uber-owned."
+    enabled: true
+
+  - name: Talabat (food delivery)
+    careers_url: https://careers.talabat.com/
+    scan_method: websearch
+    scan_query: 'site:careers.talabat.com OR "talabat" careers engineer OR "product manager"'
+    notes: "Dubai food delivery, Delivery Hero subsidiary."
+    enabled: true
+
+  - name: Fetchr (logistics)
+    careers_url: https://jobs.lever.co/fetchr
+    scan_method: websearch
+    scan_query: 'site:jobs.lever.co/fetchr OR "fetchr" careers'
+    enabled: true
+
+  - name: Property Finder
+    careers_url: https://propertyfinder.careers/
+    scan_method: websearch
+    scan_query: 'site:propertyfinder.careers OR "propertyfinder" careers engineer OR product'
+    notes: "Dubai proptech leader."
+    enabled: true
+
+  - name: Bayut (proptech)
+    careers_url: https://www.bayut.com/about/careers/
+    scan_method: websearch
+    scan_query: '"bayut" careers "Software" OR "Data" OR "Product" Dubai'
+    enabled: true
+
+  - name: Kitopi (foodtech)
+    careers_url: https://job-boards.greenhouse.io/kitopi
+    api: https://boards-api.greenhouse.io/v1/boards/kitopi/jobs
+    notes: "Dubai cloud kitchen operator."
+    enabled: true
+
+  - name: Tabby (BNPL fintech)
+    careers_url: https://jobs.ashbyhq.com/tabby
+    scan_method: websearch
+    scan_query: 'site:jobs.ashbyhq.com/tabby'
+    notes: "Dubai BNPL fintech unicorn."
+    enabled: true
+
+  - name: Tamara (BNPL fintech)
+    careers_url: https://job-boards.greenhouse.io/tamara
+    api: https://boards-api.greenhouse.io/v1/boards/tamara/jobs
+    notes: "Saudi BNPL, UAE presence."
+    enabled: true
+
+  - name: Lune (fintech)
+    careers_url: https://jobs.ashbyhq.com/lunefinancial
+    scan_method: websearch
+    scan_query: 'site:jobs.ashbyhq.com/lunefinancial OR "lune financial" careers'
+    enabled: true
+
+  - name: Beehive (P2P lending)
+    careers_url: https://www.beehive.ae/careers
+    scan_method: websearch
+    scan_query: '"beehive.ae" careers OR "beehive UAE" "Software" OR "Engineer"'
+    enabled: true
+
+  # -- Global companies with Dubai / UAE hubs --
+
+  - name: Amazon UAE (AWS + Commerce)
+    careers_url: https://www.amazon.jobs/en/search?base_query=&loc_query=Dubai%2C+UAE
+    scan_method: websearch
+    scan_query: 'site:amazon.jobs "Dubai" OR "UAE" "Software Development" OR "Solutions Architect" OR "Data"'
+    enabled: true
+
+  - name: Microsoft UAE
+    careers_url: https://jobs.careers.microsoft.com/
+    scan_method: websearch
+    scan_query: 'site:jobs.careers.microsoft.com "Dubai" OR "UAE" OR "Abu Dhabi"'
+    enabled: true
+
+  - name: Google UAE
+    careers_url: https://careers.google.com/
+    scan_method: websearch
+    scan_query: 'site:careers.google.com "Dubai" OR "UAE" OR "Middle East"'
+    enabled: true
+
+  - name: Oracle UAE
+    careers_url: https://www.oracle.com/corporate/careers/
+    scan_method: websearch
+    scan_query: 'site:oracle.com/careers "Dubai" OR "UAE" "Software" OR "Cloud" OR "Data"'
+    enabled: true
+
+  - name: SAP UAE
+    careers_url: https://jobs.sap.com/
+    scan_method: websearch
+    scan_query: 'site:jobs.sap.com "Dubai" OR "UAE" OR "Abu Dhabi" engineer OR consultant OR architect'
+    enabled: true
+
+  - name: Cisco UAE
+    careers_url: https://jobs.cisco.com/
+    scan_method: websearch
+    scan_query: 'site:jobs.cisco.com "Dubai" OR "UAE" OR "Middle East"'
+    enabled: true
+
+  - name: Salesforce UAE
+    careers_url: https://salesforce.wd1.myworkdayjobs.com/External_Career_Site
+    scan_method: websearch
+    scan_query: 'site:salesforce.com OR site:salesforce.wd1.myworkdayjobs.com "Dubai" OR "UAE"'
+    enabled: true
+
+  - name: Accenture UAE
+    careers_url: https://www.accenture.com/ae-en/careers
+    scan_method: websearch
+    scan_query: 'site:accenture.com "Dubai" OR "UAE" "Software" OR "AI" OR "Data" OR "Cloud"'
+    enabled: true
+
+  - name: McKinsey UAE
+    careers_url: https://www.mckinsey.com/careers/
+    scan_method: websearch
+    scan_query: 'site:mckinsey.com/careers "Dubai" OR "UAE" OR "Middle East" "Digital" OR "Technology" OR "Data"'
+    enabled: true
+
+  - name: BCG UAE
+    careers_url: https://careers.bcg.com/
+    scan_method: websearch
+    scan_query: 'site:careers.bcg.com "Dubai" OR "UAE" "Technology" OR "Digital" OR "AI"'
+    enabled: true
+
+  - name: PwC UAE
+    careers_url: https://www.pwc.com/m1/en/careers.html
+    scan_method: websearch
+    scan_query: 'site:pwc.com "UAE" OR "Dubai" careers "Technology" OR "AI" OR "Data" OR "Digital"'
+    enabled: true
+
+  - name: Deloitte UAE
+    careers_url: https://www2.deloitte.com/xe/en/careers.html
+    scan_method: websearch
+    scan_query: 'site:deloitte.com "Dubai" OR "UAE" careers "Technology" OR "Data" OR "AI" OR "Cloud"'
+    enabled: true
+
+  - name: Revolut UAE
+    careers_url: https://www.revolut.com/careers/
+    scan_method: websearch
+    scan_query: 'site:revolut.com/careers "UAE" OR "Dubai" OR "Middle East"'
+    enabled: true
+
+  - name: Stripe UAE/MENA
+    careers_url: https://stripe.com/jobs
+    scan_method: websearch
+    scan_query: 'site:stripe.com/jobs "UAE" OR "Dubai" OR "MENA"'
+    enabled: true

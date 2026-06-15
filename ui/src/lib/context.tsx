@@ -55,11 +55,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     user: null,
   })
 
-  // Restore session on mount and listen for auth changes
+  // Restore session on mount, load data, listen for auth changes
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setState(s => ({ ...s, user: session?.user ?? null, loading: !session }))
+      setState(s => ({ ...s, user: session?.user ?? null }))
       if (session) refresh()
+      else setState(s => ({ ...s, loading: false }))
     })
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setState(s => ({ ...s, user: session?.user ?? null }))
@@ -116,6 +117,24 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const setProfile = useCallback(async (profile: Profile) => {
     setState(s => ({ ...s, profile }))
     await saveProfileYaml(profile)
+    // Sync to Supabase if signed in
+    const { data: { session } } = await supabase.auth.getSession()
+    if (session) {
+      await supabase.from('profiles').upsert({
+        user_id: session.user.id,
+        name: profile.name,
+        email: profile.email,
+        phone: profile.phone,
+        location: profile.location,
+        linkedin: profile.linkedin,
+        portfolio_url: profile.portfolioUrl,
+        visa_status: profile.visaStatus,
+        target_roles: profile.targetRoles,
+        narrative: profile.narrative,
+        headline: profile.headline,
+        superpowers: JSON.stringify(profile.superpowers),
+      }, { onConflict: 'user_id' })
+    }
   }, [])
 
   const signInSupabase = useCallback(async (email: string, password: string): Promise<string | null> => {
@@ -312,7 +331,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     return () => subscription.unsubscribe()
   }, [])
 
-  useEffect(() => { refresh() }, [refresh])
+  // refresh() is called from the auth useEffect above — no separate call needed
 
   return (
     <AppContext.Provider value={{

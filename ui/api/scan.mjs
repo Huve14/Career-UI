@@ -50,17 +50,24 @@ async function deepseekEnhance(jobs, apiKey, profile, region, visaSponsorship) {
   }
   const regionLabel = REGION_MAP[region] || 'UAE'
 
+  const hasText = jobs.some(j => j.text)
+  const jobData = hasText
+    ? jobs.map(j => ({ id: j.id, text: j.text }))
+    : jobs.map(j => ({ id: j.id, title: j.title, company: j.company, location: j.location }))
+
   const prompt = `You are a UAE job search expert. Analyze these listings for a candidate with:
-- Target roles: ${profile?.targetRoles || 'Data Analyst, IT Specialist'}
+- Target roles: ${getTargetRoles(profile)}
 - Location: ${regionLabel}${visaSponsorship ? '\n- MUST have visa sponsorship' : ''}
-- Skills: ${profile?.superpowers?.join(', ') || 'Data Analysis, BI, IT Support'}
+- Skills: ${getSkills(profile)}
 
-Rate each job 0-100 on fit. Also set "visaSponsorship": true/false.
+${hasText
+  ? 'Each entry is a raw job URL or description. Parse it and extract: title, company, location, url if present, and whether visa sponsorship is mentioned.\n\n'
+  : ''}Rate each job 0-100 on fit. Also set "visaSponsorship": true/false.
 
-Return JSON array: [{"id": 1, "score": 85, "visaSponsorship": true}, ...]
+Return JSON array: [{"id": 1, "title": "Data Analyst", "company": "Company Name", "location": "Dubai", "url": "https://...", "score": 85, "visaSponsorship": true}, ...]
 
 Jobs:
-${JSON.stringify(jobs.map(j => ({ id: j.id, title: j.title, company: j.company, location: j.location })))}`
+${JSON.stringify(jobData)}`
 
   const response = await fetch('https://api.deepseek.com/chat/completions', {
     method: 'POST',
@@ -82,14 +89,18 @@ ${JSON.stringify(jobs.map(j => ({ id: j.id, title: j.title, company: j.company, 
   if (!content) return jobs
 
   try {
-    const scores = JSON.parse(content.replace(/```json\s*|\s*```/g, '').trim())
-    const scoreMap = new Map(scores.map(s => [s.id, { score: s.score, visaSponsorship: s.visaSponsorship }]))
+    const enhanced = JSON.parse(content.replace(/```json\s*|\s*```/g, '').trim())
+
+    const enhancedMap = new Map(enhanced.map(s => [s.id, { score: s.score, visaSponsorship: s.visaSponsorship, title: s.title, company: s.company, url: s.url }]))
 
     for (const job of jobs) {
-      if (scoreMap.has(job.id)) {
-        const meta = scoreMap.get(job.id)
+      if (enhancedMap.has(job.id)) {
+        const meta = enhancedMap.get(job.id)
         job.score = meta.score
-        if (meta.visaSponsorship !== undefined) job.visaSponsorship = meta.visaSponsorship
+        job.visaSponsorship = meta.visaSponsorship
+        if (meta.title) job.title = meta.title
+        if (meta.company) job.company = meta.company
+        if (meta.url) job.url = meta.url
       }
     }
 
@@ -97,4 +108,14 @@ ${JSON.stringify(jobs.map(j => ({ id: j.id, title: j.title, company: j.company, 
   } catch {
     return jobs
   }
+}
+
+function getTargetRoles(profile) {
+  if (profile?.targetRoles) return profile.targetRoles
+  return 'Data Analyst, IT Specialist'
+}
+
+function getSkills(profile) {
+  if (profile?.superpowers?.length) return profile.superpowers.join(', ')
+  return 'Data Analysis, BI, IT Support'
 }

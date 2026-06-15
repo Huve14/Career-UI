@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useApp } from '../lib/context'
 
 const REGIONS = [
@@ -10,81 +10,27 @@ const REGIONS = [
 ]
 
 const CX = '567fa2be6325d416e'
-const SEARCH_SITES = 'ae.indeed.com OR gulftalent.com OR naukrigulf.com OR bayt.com OR monstergulf.com'
 
 const VISA_KEYWORDS = ['visa sponsorship', 'sponsor', 'work visa', 'employment visa', 'visa provided', 'relocation package', 'relocation assistance', 'relocate', 'overseas', 'international', 'expat', 'work permit']
 
 const UAE_COMPANIES = ['emirates', 'etihad', 'adnoc', 'dp world', 'emaar', 'fab', 'first abu dhabi', 'careem', 'talabat', 'majid al futtaim', 'damac', 'aldar', 'mubadala', 'etisalat', 'du', 'masdar', 'noor bank', 'unilever', 'pwc', 'deloitte', 'kpmg', 'ey', 'accenture', 'citi', 'hsbc', 'standard chartered', 'amazon', 'google', 'microsoft', 'oracle', 'ibm']
 
 export default function ScanJobs() {
-  const { showToast, portals, profile } = useApp()
+  const { showToast, profile } = useApp()
   const [scanning, setScanning] = useState(false)
   const [region, setRegion] = useState('all')
   const [visaSponsorship, setVisaSponsorship] = useState(true)
   const [scanResults, setScanResults] = useState<any[]>([])
-  const [scriptLoaded, setScriptLoaded] = useState(false)
+  const [manualInput, setManualInput] = useState('')
+  const [method, setMethod] = useState<'auto' | 'manual'>('auto')
 
   const regionLabel = REGIONS.find(r => r.value === region)?.label || 'All UAE'
-  const locationTerm = region === 'remote' ? 'Remote' : regionLabel
-
-  useEffect(() => {
-    if (document.querySelector('script[src*="cse.google.com/cse.js"]')) {
-      setScriptLoaded(true)
-      return
-    }
-    const s = document.createElement('script')
-    s.src = `https://cse.google.com/cse.js?cx=${CX}`
-    s.onload = () => setScriptLoaded(true)
-    document.head.appendChild(s)
-  }, [])
-
-  // Fetch results via Google Custom Search REST API directly from browser
-  const searchViaREST = async (query: string): Promise<any> => {
-    const res = await fetch(`https://www.googleapis.com/customsearch/v1?key=AIzaSyALz7g-iF4Ry5HUaVk3WlS6fqbna0EEdFA&cx=${CX}&q=${encodeURIComponent(query)}&num=10`)
-    if (!res.ok) {
-      const text = await res.text()
-      throw new Error(`Google API (${res.status}): ${text.slice(0, 300)}`)
-    }
-    return await res.json()
-  }
-
-  const parseResults = (data: any): any[] => {
-    const out: any[] = []
-    // JSON REST API format
-    const items = data?.items || data?.results || []
-    if (!items.length) return out
-
-    const negKws = portals?.negativeKeywords || ['Senior', 'Lead', 'Manager']
-
-    for (const item of items) {
-      const title = item.title || ''
-      const url = item.link || item.unescapedUrl || item.url || ''
-      const snippet = item.snippet || item.content || item.contentNoFormatting || ''
-      const lower = title.toLowerCase()
-      if (negKws.some((k: string) => lower.includes(k.toLowerCase()))) continue
-
-      const company = (title.match(/\bat\s+([^-]+)/i) || title.match(/-\s*(.+)$/))?.[1]?.trim()
-        || snippet.match(/(?:at|by|with)\s+([A-Z][A-Za-z0-9\s&.]+?)(?:\s+-\s+|\s+in\s+|\.|$)/)?.[1]?.trim()
-        || 'UAE Company'
-
-      const key = `${company}|${title}`
-      if (out.some(r => (r as any).key === key)) continue
-
-      const hasVisa = VISA_KEYWORDS.some(kw => (title + ' ' + snippet).toLowerCase().includes(kw))
-      if (visaSponsorship && !hasVisa) continue
-
-      out.push({ key, id: Date.now() + Math.random(), title, company, location: regionLabel, url, source: url.includes('indeed.com') ? 'Indeed' : url.includes('gulftalent.com') ? 'Gulftalent' : url.includes('naukrigulf.com') ? 'Naukri Gulf' : url.includes('bayt.com') ? 'Bayt' : url.includes('monstergulf.com') ? 'Monster Gulf' : 'Job Board', visaSponsorship: hasVisa, snippet } as any)
-    }
-    return out
-  }
 
   const scoreJob = (title: string, company: string, hasVisa: boolean): number => {
     let s = 50
     const l = title.toLowerCase()
-    const pk = portals?.positiveKeywords || ['Data Analyst', 'IT Specialist']
-    for (const k of pk) { if (l.includes(k.toLowerCase())) s += 8 }
+    if (l.includes('data analyst') || l.includes('it specialist') || l.includes('bi analyst')) s += 8
     if (region === 'all' || region === 'dubai' || region === 'abu-dhabi' || region === 'sharjah') s += 10
-    if (region === 'remote' && (l.includes('remote') || l.includes('wfh'))) s += 15
     if (hasVisa) s += 12
     for (const c of UAE_COMPANIES) { if (company.toLowerCase().includes(c)) s += 5 }
     const tr = (profile?.targetRoles || '').toLowerCase()
@@ -92,7 +38,48 @@ export default function ScanJobs() {
     return Math.min(Math.round(s), 100)
   }
 
-  const triggerScan = async () => {
+  const parseGoogleResults = (data: any): any[] => {
+    const out: any[] = []
+    const items = data?.results || []
+    if (!items.length) return out
+    for (const item of items) {
+      const title = item.title || ''
+      const url = item.clickUrl || item.url || ''
+      const snippet = item.content || ''
+      const lower = title.toLowerCase()
+      if (['senior', 'lead', 'manager', 'principal'].some(k => lower.includes(k))) continue
+      const company = item.richSnippet?.organization?.name
+        || (title.match(/\bat\s+([^-]+)/i) || title.match(/-\s*(.+)$/))?.[1]?.trim()
+        || snippet.match(/(?:at|by|with)\s+([A-Z][A-Za-z0-9\s&.]+?)(?:\s+-\s+|\s+in\s+|\.|$)/)?.[1]?.trim()
+        || 'UAE Company'
+      const hasVisa = VISA_KEYWORDS.some(kw => (title + ' ' + snippet).toLowerCase().includes(kw))
+      if (visaSponsorship && !hasVisa) continue
+      const key = `${company}|${title}`
+      if (out.some(r => (r as any).key === key)) continue
+      out.push({ key, id: Date.now() + Math.random(), title, company, location: regionLabel, url, source: 'Google CSE', visaSponsorship: hasVisa, snippet } as any)
+    }
+    return out
+  }
+
+  const searchCSE = (query: string): Promise<any> => {
+    return new Promise((resolve, reject) => {
+      const cb = '_cse_cb_' + Date.now()
+      const url = `https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=en&source=gcsc&cx=${CX}&q=${encodeURIComponent(query)}&callback=${cb}`
+
+      ;(window as any)[cb] = (data: any) => {
+        delete (window as any)[cb]
+        resolve(data)
+      }
+
+      const t = document.createElement('script')
+      t.src = url
+      t.onerror = () => { delete (window as any)[cb]; reject(new Error('Script failed to load')) }
+      document.head.appendChild(t)
+      setTimeout(() => { delete (window as any)[cb]; reject(new Error('Request timed out')) }, 20000)
+    })
+  }
+
+  const triggerAutoScan = async () => {
     if (scanning) return
     setScanning(true)
     setScanResults([])
@@ -101,16 +88,15 @@ export default function ScanJobs() {
       ? profile.targetRoles.split(',').map((r: string) => r.trim()).filter(Boolean)
       : ['Data Analyst', 'IT Specialist', 'BI Analyst']
 
+    const queries = roles.map(r => `${r} ${regionLabel}`)
     const allResults: any[] = []
     const seen = new Set<string>()
     let errors: string[] = []
 
-    for (const role of roles) {
-      const query = `${role} ${locationTerm} site:${SEARCH_SITES}`
-
+    for (const q of queries) {
       try {
-        const data = await searchViaREST(query)
-        const parsed = parseResults(data)
+        const data = await searchCSE(q)
+        const parsed = parseGoogleResults(data)
         for (const r of parsed) {
           if (seen.has(r.key)) continue
           seen.add(r.key)
@@ -119,13 +105,12 @@ export default function ScanJobs() {
           allResults.push(r)
         }
       } catch (e: any) {
-        errors.push(`${role}: ${e.message || e}`)
+        errors.push(`${q}: ${e.message || e}`)
       }
     }
 
     if (allResults.length === 0) {
-      showToast(errors.length ? `Google error: ${errors[0]}` : 'No matching jobs found')
-      console.error('Scan errors:', errors)
+      showToast(errors.length ? `Search blocked by Google. Try Manual Input below.` : 'No results')
       setScanning(false)
       return
     }
@@ -135,13 +120,12 @@ export default function ScanJobs() {
       const res = await fetch('/api/scan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ portals, profile, region, visaSponsorship, clientJobs: allResults.map(r => ({ id: r.id, title: r.title, company: r.company, location: r.location })) }),
+        body: JSON.stringify({ clientJobs: allResults.map(r => ({ id: r.id, title: r.title, company: r.company, location: r.location })) }),
       })
       const d = await res.json()
       if (d.jobs) {
         const sm = new Map(d.jobs.map((j: any) => [j.id, j.score]))
-        const vm = new Map(d.jobs.map((j: any) => [j.id, j.visaSponsorship]))
-        for (const r of allResults) { if (sm.has(r.id)) r.score = sm.get(r.id); if (vm.has(r.id)) r.visaSponsorship = vm.get(r.id) }
+        for (const r of allResults) { if (sm.has(r.id)) r.score = sm.get(r.id) }
       }
     } catch {}
 
@@ -151,16 +135,62 @@ export default function ScanJobs() {
     setScanning(false)
   }
 
+  const triggerManualScan = async () => {
+    if (scanning || !manualInput.trim()) return
+    setScanning(true)
+    setScanResults([])
+
+    const lines = manualInput.split('\n').map(l => l.trim()).filter(Boolean)
+
+    try {
+      const res = await fetch('/api/scan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ clientJobs: lines.map((l, i) => ({ id: Date.now() + i, text: l })) }),
+      })
+      const d = await res.json()
+      if (d.jobs) {
+        const results = d.jobs.map((j: any, i: number) => ({
+          id: Date.now() + i,
+          title: j.title || lines[i]?.slice(0, 80) || 'Job ' + (i + 1),
+          company: j.company || 'Unknown',
+          location: regionLabel,
+          url: j.url || '',
+          source: 'Manual',
+          visaSponsorship: j.visaSponsorship !== false,
+          score: j.score || 50,
+          snippet: j.snippet || '',
+        }))
+        results.sort((a: any, b: any) => b.score - a.score)
+        setScanResults(results)
+        showToast(`${results.length} jobs analyzed`)
+      }
+    } catch (e: any) {
+      showToast(`DeepSeek scoring failed: ${e.message}`)
+    }
+    setScanning(false)
+  }
+
+  const triggerScan = () => {
+    if (method === 'auto') triggerAutoScan()
+    else triggerManualScan()
+  }
+
   const sl = (s: number) => s >= 85 ? 'high' : s >= 65 ? 'mid' : 'low'
 
   return (
     <div className="view-wrap" style={{ padding: '36px 40px', maxWidth: 860 }}>
       <div style={{ marginBottom: 28 }}>
         <h1 style={{ fontFamily: "'Space Grotesk',sans-serif", fontSize: 26, fontWeight: 700, color: 'var(--text)', letterSpacing: -0.5, margin: '0 0 5px' }}>Scan Jobs</h1>
-        <p style={{ fontSize: 13.5, color: 'var(--text-muted)', margin: 0 }}>Search UAE job boards via Google with DeepSeek AI scoring.</p>
+        <p style={{ fontSize: 13.5, color: 'var(--text-muted)', margin: 0 }}>Auto-search via Google CSE or paste job URLs for DeepSeek AI scoring.</p>
       </div>
 
       <div className="card" style={{ padding: '20px 22px', marginBottom: 20 }}>
+        <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+          <button className={`btn btn-xs ${method === 'auto' ? 'btn-primary' : 'btn-ghost'}`} onClick={() => setMethod('auto')}>Auto Search</button>
+          <button className={`btn btn-xs ${method === 'manual' ? 'btn-primary' : 'btn-ghost'}`} onClick={() => setMethod('manual')}>Manual Paste</button>
+        </div>
+
         <div style={{ display: 'flex', gap: 16, marginBottom: 16, flexWrap: 'wrap', alignItems: 'center' }}>
           <div>
             <label style={{ fontSize: 11, fontWeight: 600, letterSpacing: 0.5, textTransform: 'uppercase', display: 'block', marginBottom: 5, color: 'var(--text-faint)' }}>Region</label>
@@ -182,17 +212,32 @@ export default function ScanJobs() {
             </label>
           </div>
         </div>
-        <button className="btn btn-primary" onClick={triggerScan} disabled={scanning}
+
+        {method === 'manual' && (
+          <div style={{ marginBottom: 16 }}>
+            <label style={{ fontSize: 11, fontWeight: 600, letterSpacing: 0.5, textTransform: 'uppercase', display: 'block', marginBottom: 6, color: 'var(--text-faint)' }}>
+              Paste job URLs or descriptions (one per line)
+            </label>
+            <textarea value={manualInput} onChange={e => setManualInput(e.target.value)}
+              placeholder={`Data Analyst at Emirates Group - Dubai\nhttps://ae.indeed.com/viewjob?jk=123\nIT Support Specialist at DP World - Abu Dhabi`}
+              style={{ width: '100%', minHeight: 100, padding: 10, fontSize: 13, fontFamily: 'inherit', border: '1px solid var(--border)', borderRadius: 6, background: 'var(--bg)', color: 'var(--text)', resize: 'vertical' }} />
+          </div>
+        )}
+
+        <button className="btn btn-primary" onClick={triggerScan} disabled={scanning || (method === 'manual' && !manualInput.trim())}
           style={{ opacity: scanning ? 0.6 : 1, cursor: scanning ? 'default' : 'pointer' }}>
-          {scanning ? 'Scanning...' : (scanResults.length > 0 ? 'Scan Again' : 'Start Scan')}
+          {scanning ? 'Processing...'
+            : method === 'auto' ? (scanResults.length > 0 ? 'Scan Again' : 'Start Scan')
+            : 'Analyze Jobs'}
         </button>
       </div>
 
       {scanning && (
         <div style={{ textAlign: 'center', padding: '64px 24px' }}>
           <div style={{ width: 40, height: 40, border: '3px solid var(--border)', borderTopColor: 'var(--accent)', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 18px' }}></div>
-          <div style={{ fontFamily: "'Space Grotesk',sans-serif", fontSize: 16, fontWeight: 600, color: 'var(--text)', marginBottom: 6 }}>Scanning {regionLabel}...</div>
-          <p style={{ fontSize: 13.5, color: 'var(--text-muted)', margin: 0 }}>Searching Indeed, Gulftalent, Naukri Gulf, Bayt, Monster Gulf.</p>
+          <div style={{ fontFamily: "'Space Grotesk',sans-serif", fontSize: 16, fontWeight: 600, color: 'var(--text)', marginBottom: 6 }}>
+            {method === 'auto' ? `Scanning ${regionLabel}...` : 'Analyzing with DeepSeek AI...'}
+          </div>
         </div>
       )}
 

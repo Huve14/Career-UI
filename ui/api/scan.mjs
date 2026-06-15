@@ -1,6 +1,8 @@
 // Vercel Serverless Function — /api/scan
 // Searches UAE job boards via Google Custom Search API (OAuth2 with service account).
 
+import crypto from 'crypto'
+
 const REGION_MAP = {
   'all': 'United Arab Emirates',
   'dubai': 'Dubai',
@@ -35,7 +37,7 @@ async function getAccessToken(saJSON) {
 
   const b64 = (obj) => Buffer.from(JSON.stringify(obj)).toString('base64url')
   const signatureInput = `${b64(header)}.${b64(payload)}`
-  const sign = require('crypto').createSign('RSA-SHA256')
+  const sign = crypto.createSign('RSA-SHA256')
   sign.update(signatureInput)
   const signature = sign.sign(private_key, 'base64url')
   const assertion = `${signatureInput}.${signature}`

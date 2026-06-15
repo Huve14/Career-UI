@@ -252,3 +252,93 @@ select.form-input {
   @page { margin: 0.5cm; }
   body { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
 }
+
+/* ── Google Custom Search Engine — dark theme overrides ──────── */
+.cse-wrap .gsc-control-cse {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  font-family: 'DM Sans', sans-serif !important;
+}
+.cse-wrap .gsc-search-box,
+.cse-wrap .gsc-search-box-tools { margin-bottom: 0 !important; border-bottom: none !important; }
+.cse-wrap .gsc-input-box {
+  background: var(--surface2) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 8px !important;
+  height: 38px !important;
+  padding: 0 8px !important;
+}
+.cse-wrap .gsc-input,
+.cse-wrap input.gsc-input {
+  background: transparent !important;
+  color: var(--text) !important;
+  font-family: 'DM Sans', sans-serif !important;
+  font-size: 13.5px !important;
+  padding: 0 4px !important;
+}
+.cse-wrap .gsc-search-button-v2,
+.cse-wrap .gsc-search-button {
+  background: var(--accent) !important;
+  border: none !important;
+  border-radius: 8px !important;
+  padding: 8px 14px !important;
+  cursor: pointer !important;
+}
+.cse-wrap .gsc-search-button-v2 svg path { fill: #fff !important; }
+.cse-wrap .gsc-results-wrapper-overlay,
+.cse-wrap .gsc-results-wrapper-nooverlay {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+.cse-wrap .gsc-webResult.gsc-result,
+.cse-wrap .gsc-result {
+  background: var(--surface2) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 8px !important;
+  margin-bottom: 10px !important;
+  padding: 12px 14px !important;
+}
+.cse-wrap .gsc-webResult.gsc-result:hover { background: var(--surface3) !important; }
+.cse-wrap .gs-title,
+.cse-wrap .gs-title * {
+  color: var(--accent-text) !important;
+  font-family: 'DM Sans', sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+}
+.cse-wrap .gs-snippet,
+.cse-wrap .gs-snippet * {
+  color: var(--text-muted) !important;
+  font-family: 'DM Sans', sans-serif !important;
+  font-size: 12.5px !important;
+  line-height: 1.55 !important;
+}
+.cse-wrap .gs-snippet b { color: var(--text) !important; font-weight: 600 !important; }
+.cse-wrap .gs-visibleUrl,
+.cse-wrap .gs-visibleUrl-long {
+  color: var(--text-faint) !important;
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 10.5px !important;
+}
+.cse-wrap .gsc-cursor-box { text-align: center; margin-top: 12px; }
+.cse-wrap .gsc-cursor-page {
+  color: var(--text-muted) !important;
+  background: var(--surface2) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 5px !important;
+  padding: 3px 9px !important;
+  display: inline-block;
+  margin: 2px;
+}
+.cse-wrap .gsc-cursor-current-page {
+  background: var(--accent) !important;
+  color: #fff !important;
+  border-color: var(--accent) !important;
+}
+.cse-wrap .gsc-above-wrapper-area,
+.cse-wrap .gsc-refinementsArea,
+.cse-wrap .gcsc-more-maybe-branding-root,
+.cse-wrap .gsc-results .gsc-imageResult { display: none !important; }
+.cse-wrap .gsc-selected-option-container { background: var(--surface2) !important; border-color: var(--border) !important; }

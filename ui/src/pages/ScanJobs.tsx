@@ -36,7 +36,7 @@ export default function ScanJobs() {
     setResults([])
     setScanInfo(null)
     try {
-      const res = await fetch('/api/scan-live', { method: 'GET' })
+      const res = await fetch(`/api/scan-live?t=${Date.now()}`, { method: 'GET' })
       if (!res.ok) throw new Error(`Server error ${res.status}`)
       const data = await res.json()
 

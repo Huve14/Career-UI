@@ -57,7 +57,7 @@ function passesTitleFilter(title) {
   return TITLE_KEYWORDS.some(k => lower.includes(k))
 }
 
-async function fetchWithTimeout(url, timeoutMs = 12000) {
+async function fetchWithTimeout(url, timeoutMs = 8000) {
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), timeoutMs)
   try {
@@ -72,9 +72,8 @@ async function fetchWithTimeout(url, timeoutMs = 12000) {
 }
 
 async function scanGreenhouse(company) {
-  const host = company.region === 'eu' ? 'job-boards.eu.greenhouse.io' : 'job-boards.greenhouse.io'
   const apiUrl = `https://boards-api.greenhouse.io/v1/boards/${company.slug}/jobs`
-  const json = await fetchWithTimeout(apiUrl)
+  const json = await fetchWithTimeout(apiUrl, 8000)
   const jobs = Array.isArray(json?.jobs) ? json.jobs : []
   return jobs.map(j => ({
     title: j.title || '',
@@ -85,8 +84,15 @@ async function scanGreenhouse(company) {
 }
 
 async function scanAshby(company) {
+  // Ashby is slow — give it up to 8s, retry once if it aborts
   const apiUrl = `https://api.ashbyhq.com/posting-api/job-board/${company.slug}?includeCompensation=true`
-  const json = await fetchWithTimeout(apiUrl, 35000) // Ashby is slow
+  let json
+  try {
+    json = await fetchWithTimeout(apiUrl, 8000)
+  } catch {
+    // one retry with fresh abort controller
+    json = await fetchWithTimeout(apiUrl, 8000)
+  }
   const jobs = Array.isArray(json?.jobs) ? json.jobs : []
   return jobs.map(j => ({
     title: j.title || '',
@@ -150,6 +156,7 @@ export default async function handler(req, res) {
     return a.company.localeCompare(b.company)
   })
 
-  res.setHeader('Cache-Control', 's-maxage=1800, stale-while-revalidate') // cache 30min on Vercel edge
-  return res.json({ jobs: unique, count: unique.count, scanned: allCompanies.length, ts: new Date().toISOString() })
+  // No edge caching — always hit ATS APIs fresh on every scan click
+  res.setHeader('Cache-Control', 'no-store')
+  return res.json({ jobs: unique, count: unique.length, scanned: allCompanies.length, ts: new Date().toISOString() })
 }

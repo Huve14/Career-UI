@@ -106,6 +106,42 @@ const COMPANIES = [
 ]
 
 
+// Keep only jobs that could realistically be filled from the UAE.
+// Rules (in order):
+//   1. No location → unknown, include (many ATS boards leave it blank)
+//   2. UAE city / MENA / Middle East → include
+//   3. EMEA (Europe, Middle East & Africa) → include (UAE is in-region)
+//   4. Worldwide / global remote → include
+//   5. "Remote" with no country qualifier → include
+//   6. "Remote" tied to a non-UAE country (US, UK, Canada, etc.) → exclude
+//   7. Any other explicit city/country outside UAE → exclude
+function isUAERelevant(location) {
+  if (!location || !location.trim()) return true
+
+  const loc = location.toLowerCase()
+
+  // UAE + MENA specific cities / regions
+  if (/uae|united arab emirates|dubai|abu dhabi|sharjah|ajman|ras al khaimah|fujairah|umm al quwain/.test(loc)) return true
+  if (/mena|middle east/.test(loc)) return true
+
+  // EMEA covers the UAE
+  if (/\bemea\b/.test(loc)) return true
+
+  // Worldwide / global
+  if (/worldwide|global/.test(loc)) return true
+
+  // Remote handling
+  if (/remote/.test(loc)) {
+    // Remote explicitly tied to a non-UAE market → exclude
+    if (/\bus\b|united states|usa|\buk\b|united kingdom|great britain|canada|\bca\b|australia|new zealand|germany|france|latam|latin america|brasil|brazil|india|\bin\b/.test(loc)) return false
+    // Remote without a country restriction → include
+    return true
+  }
+
+  // Specific non-UAE location → exclude
+  return false
+}
+
 async function fetchWithTimeout(url, timeoutMs = 8000) {
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), timeoutMs)
@@ -194,17 +230,20 @@ export default async function handler(req, res) {
 
   // Deduplicate by URL
   const seen = new Set()
-  const unique = jobs.filter(j => {
+  const deduped = jobs.filter(j => {
     if (!j.url || seen.has(j.url)) return false
     seen.add(j.url)
     return true
   })
 
-  // Sort: UAE/MENA location first, then alphabetical by company
+  // Filter to UAE-relevant locations only
+  const unique = deduped.filter(j => isUAERelevant(j.location))
+
+  // Sort: explicit UAE cities first, then generic remote, then alphabetical
   unique.sort((a, b) => {
-    const aUAE = /uae|dubai|abu dhabi|sharjah|mena|remote/i.test(a.location)
-    const bUAE = /uae|dubai|abu dhabi|sharjah|mena|remote/i.test(b.location)
-    if (aUAE !== bUAE) return aUAE ? -1 : 1
+    const aCity = /uae|dubai|abu dhabi|sharjah|ajman|mena|middle east/i.test(a.location)
+    const bCity = /uae|dubai|abu dhabi|sharjah|ajman|mena|middle east/i.test(b.location)
+    if (aCity !== bCity) return aCity ? -1 : 1
     return a.company.localeCompare(b.company)
   })
 

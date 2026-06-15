@@ -1,5 +1,5 @@
 // Vercel Serverless Function — /api/scan
-// Scans multiple job boards for UAE roles with region + visa sponsorship filters.
+// Searches UAE job boards via Google Custom Search API.
 
 const REGION_MAP = {
   'all': 'United Arab Emirates',
@@ -9,39 +9,11 @@ const REGION_MAP = {
   'remote': 'Remote',
 }
 
-const UAE_JOB_BOARDS = [
-  {
-    name: 'Indeed UAE',
-    url: (q, region) => {
-      const loc = REGION_MAP[region] || 'United Arab Emirates'
-      return `https://ae.indeed.com/jobs?q=${encodeURIComponent(q)}&l=${encodeURIComponent(loc)}&sort=date&limit=50`
-    },
-  },
-  {
-    name: 'Gulftalent',
-    url: (q, _region) =>
-      `https://www.gulftalent.com/jobs?keywords=${encodeURIComponent(q)}&country=AE`,
-  },
-  {
-    name: 'Naukri Gulf',
-    url: (q, _region) =>
-      `https://www.naukrigulf.com/jobs?keywords=${encodeURIComponent(q)}&location=uae`,
-  },
-]
+const GOOGLE_CX = process.env.GOOGLE_CX || ''
+const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY || ''
+const DEEPSEEK_KEY = process.env.DEEPSEEK_API_KEY || ''
 
-const SEARCH_QUERIES = [
-  'Data Analyst',
-  'IT Specialist',
-  'BI Analyst',
-  'Business Intelligence',
-  'Data Analytics',
-  'IT Support Engineer',
-  'Data Engineer',
-  'Analytics Manager',
-  'MIS Analyst',
-  'IT Administrator',
-  'Systems Analyst',
-]
+const SEARCH_SITES = 'ae.indeed.com OR gulftalent.com OR naukrigulf.com OR bayt.com OR monstergulf.com'
 
 const VISA_KEYWORDS = [
   'visa sponsorship', 'sponsor', 'work visa', 'employment visa', 'visa provided',
@@ -54,67 +26,76 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
+  if (!GOOGLE_API_KEY || !GOOGLE_CX) {
+    return res.status(500).json({ error: 'Google API not configured' })
+  }
+
   const { deepseekKey: clientKey, portals, profile, region = 'all', visaSponsorship = true } = req.body || {}
-  const deepseekKey = clientKey || process.env.DEEPSEEK_API_KEY || ''
+  const deepseekKey = clientKey || DEEPSEEK_KEY
   const positiveKws = portals?.positiveKeywords || ['Data Analyst', 'IT Specialist']
   const negativeKws = portals?.negativeKeywords || ['Senior', 'Lead', 'Manager']
 
   const results = []
   const seen = new Set()
 
-  const queries = profile?.targetRoles
+  const regionLabel = REGION_MAP[region] || 'UAE'
+  const locationTerm = region === 'remote' ? 'Remote' : regionLabel
+
+  // Build search queries
+  const targetRoles = profile?.targetRoles
     ? profile.targetRoles.split(',').map(r => r.trim()).filter(Boolean)
-    : SEARCH_QUERIES
+    : ['Data Analyst', 'IT Specialist', 'BI Analyst']
 
-  for (const board of UAE_JOB_BOARDS) {
-    for (const q of queries) {
-      try {
-        const boardUrl = board.url(q, region)
-        const response = await fetch(boardUrl, {
-          headers: {
-            'User-Agent':
-              'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
-            Accept: 'text/html',
-          },
-          signal: AbortSignal.timeout(8000),
+  for (const role of targetRoles) {
+    try {
+      const query = `${role} ${locationTerm} site:${SEARCH_SITES}`
+      const url = `https://www.googleapis.com/customsearch/v1?key=${GOOGLE_API_KEY}&cx=${GOOGLE_CX}&q=${encodeURIComponent(query)}&num=10`
+      const response = await fetch(url, { signal: AbortSignal.timeout(10000) })
+      if (!response.ok) continue
+
+      const data = await response.json()
+      const items = data.items || []
+
+      for (const item of items) {
+        const title = item.title || ''
+        const link = item.link || ''
+        const snippet = item.snippet || ''
+
+        // Reject negative keywords
+        const titleLower = title.toLowerCase()
+        if (negativeKws.some(k => titleLower.includes(k.toLowerCase()))) continue
+
+        // Extract company from title (try "title at company" or "title - company" patterns)
+        const company = extractCompany(title, snippet)
+        const location = extractLocation(snippet, regionLabel)
+
+        const key = `${company}|${title}`
+        if (seen.has(key)) continue
+        seen.add(key)
+
+        const hasVisa = VISA_KEYWORDS.some(kw =>
+          `${title} ${snippet}`.toLowerCase().includes(kw)
+        )
+        if (visaSponsorship && !hasVisa) continue
+
+        const score = scoreJob(title, company, location, positiveKws, region, hasVisa, targetRoles)
+
+        results.push({
+          id: results.length + 1,
+          title,
+          company,
+          location: location || regionLabel,
+          score,
+          url: link,
+          source: extractSource(link),
+          visaSponsorship: hasVisa,
         })
-
-        if (!response.ok) continue
-
-        const html = await response.text()
-        const jobs = parseJobListings(html, board.name)
-
-        for (const job of jobs) {
-          const key = `${job.company}|${job.title}`
-          if (seen.has(key)) continue
-          seen.add(key)
-
-          const titleLower = job.title.toLowerCase()
-          if (negativeKws.some(k => titleLower.includes(k.toLowerCase()))) continue
-
-          const hasVisa = detectVisaSponsorship(job, html)
-          if (visaSponsorship && !hasVisa) continue
-
-          const score = scoreJob(job, positiveKws, profile, region, hasVisa)
-
-          results.push({
-            id: results.length + 1,
-            title: job.title,
-            company: job.company,
-            location: job.location || 'UAE',
-            score,
-            url: job.url,
-            source: board.name,
-            visaSponsorship: hasVisa,
-          })
-        }
-      } catch {
-        // Silently skip
       }
+    } catch {
+      // Silently skip
     }
   }
 
-  // Sort by score descending
   const sorted = results.sort((a, b) => b.score - a.score).slice(0, 30)
 
   // DeepSeek AI enhancement
@@ -130,102 +111,58 @@ export default async function handler(req, res) {
   return res.json({
     jobs: sorted,
     count: sorted.length,
-    source: deepseekKey ? 'deepseek' : 'scraped',
+    source: 'google',
     deepseek: !!deepseekKey,
   })
 }
 
-function parseJobListings(html, source) {
-  const jobs = []
+function extractCompany(title, snippet) {
+  // "Job Title at Company Name"
+  const atMatch = title.match(/\bat\s+([^-]+)/i)
+  if (atMatch) return atMatch[1].trim()
 
-  if (source === 'Indeed UAE') {
-    const jobRegex = /data-jk="([^"]+)"[\s\S]*?jobTitle[^>]*>([^<]+)<[\s\S]*?companyName[^>]*>([^<]+)<[\s\S]*?companyLocation[^>]*>([^<]+)</g
-    let m
-    while ((m = jobRegex.exec(html)) !== null) {
-      jobs.push({
-        title: clean(m[2]),
-        company: clean(m[3]),
-        location: clean(m[4]),
-        url: `https://ae.indeed.com/viewjob?jk=${m[1]}`,
-      })
-    }
+  // "Job Title - Company Name"
+  const dashMatch = title.match(/-\s*(.+)$/)
+  if (dashMatch) return dashMatch[1].trim()
 
-    if (jobs.length === 0) {
-      const titleRegex = /jobTitle[^>]*>([^<]+)</g
-      const companyRegex = /companyName[^>]*>([^<]+)</g
-      const locationRegex = /companyLocation[^>]*>([^<]+)</g
-      const titles = [...html.matchAll(titleRegex)].slice(0, 15).map(m => clean(m[1]))
-      const companies = [...html.matchAll(companyRegex)].slice(0, 15).map(m => clean(m[1]))
-      const locations = [...html.matchAll(locationRegex)].slice(0, 15).map(m => clean(m[1]))
+  // Try snippet for company
+  const snipCompany = snippet.match(/(?:at|by|with)\s+([A-Z][A-Za-z0-9\s&.]+?)(?:\s+-\s+|\s+in\s+|\.|$)/)
+  if (snipCompany) return snipCompany[1].trim()
 
-      for (let i = 0; i < Math.min(titles.length, 15); i++) {
-        jobs.push({
-          title: titles[i],
-          company: companies[i] || 'UAE Company',
-          location: locations[i] || 'UAE',
-          url: `https://ae.indeed.com/jobs?q=${encodeURIComponent(titles[i])}`,
-        })
-      }
-    }
-  }
-
-  if (source === 'Gulftalent') {
-    const cardsRegex = /<div class="job-card"[^>]*>([\s\S]*?)<\/div>\s*<\/div>\s*<\/div>/g
-    let m
-    while ((m = cardsRegex.exec(html)) !== null) {
-      const card = m[1]
-      const titleMatch = card.match(/<h2[^>]*>([^<]+)</)
-      const companyMatch = card.match(/<span class="company"[^>]*>([^<]+)</)
-      const urlMatch = card.match(/href="([^"]+)"/)
-      if (titleMatch && companyMatch) {
-        jobs.push({
-          title: clean(titleMatch[1]),
-          company: clean(companyMatch[1]),
-          location: 'UAE',
-          url: urlMatch ? `https://www.gulftalent.com${urlMatch[1]}` : '',
-        })
-      }
-    }
-  }
-
-  if (source === 'Naukri Gulf') {
-    const titleRegex = /class="job-title"[^>]*>([^<]+)</g
-    const companyRegex = /class="company-name"[^>]*>([^<]+)</g
-    const locationRegex = /class="location"[^>]*>([^<]+)</g
-    const titles = [...html.matchAll(titleRegex)].slice(0, 15).map(m => clean(m[1]))
-    const companies = [...html.matchAll(companyRegex)].slice(0, 15).map(m => clean(m[1]))
-    const locations = [...html.matchAll(locationRegex)].slice(0, 15).map(m => clean(m[1]))
-
-    for (let i = 0; i < Math.min(titles.length, 15); i++) {
-      jobs.push({
-        title: titles[i],
-        company: companies[i] || 'UAE Company',
-        location: locations[i] || 'UAE',
-        url: '',
-      })
-    }
-  }
-
-  return jobs
+  return 'UAE Company'
 }
 
-function detectVisaSponsorship(job, rawHtml) {
-  const text = `${job.title} ${job.company} ${job.description || ''} ${rawHtml || ''}`.toLowerCase()
-  return VISA_KEYWORDS.some(kw => text.includes(kw))
+function extractLocation(snippet, regionLabel) {
+  const locMatch = snippet.match(/\bin\s+([A-Za-z\s]+?)(?:\s*-\s*|\s*\.\s*|$)/)
+  if (locMatch) {
+    const loc = locMatch[1].trim()
+    if (loc.length < 30) return loc
+  }
+  return regionLabel
 }
 
-function scoreJob(job, positiveKws, profile, region, hasVisa) {
+function extractSource(url) {
+  if (url.includes('indeed.com')) return 'Indeed'
+  if (url.includes('gulftalent.com')) return 'Gulftalent'
+  if (url.includes('naukrigulf.com')) return 'Naukri Gulf'
+  if (url.includes('bayt.com')) return 'Bayt'
+  if (url.includes('monstergulf.com')) return 'Monster Gulf'
+  return 'Job Board'
+}
+
+function scoreJob(title, company, location, positiveKws, region, hasVisa, targetRoles) {
   let score = 50
 
-  const titleLower = job.title.toLowerCase()
-  const companyLower = job.company.toLowerCase()
-  const locationLower = job.location.toLowerCase()
+  const titleLower = title.toLowerCase()
+  const companyLower = company.toLowerCase()
+  const locationLower = location.toLowerCase()
 
   for (const kw of positiveKws) {
     if (titleLower.includes(kw.toLowerCase())) score += 8
   }
 
   // Region match
+  const regionLabel = REGION_MAP[region] || 'uae'
   if (region === 'all') {
     if (locationLower.includes('dubai')) score += 10
     if (locationLower.includes('abu dhabi')) score += 10
@@ -240,10 +177,8 @@ function scoreJob(job, positiveKws, profile, region, hasVisa) {
     score += 15
   }
 
-  // Visa sponsorship bonus
   if (hasVisa) score += 12
 
-  // Known UAE companies
   const uaeCompanies = [
     'emirates', 'etihad', 'adnoc', 'dp world', 'emaar', 'fab', 'first abu dhabi',
     'careem', 'talabat', 'majid al futtaim', 'damac', 'aldar', 'mubadala',
@@ -255,14 +190,11 @@ function scoreJob(job, positiveKws, profile, region, hasVisa) {
     if (companyLower.includes(c)) score += 5
   }
 
-  const targetRoles = (profile?.targetRoles || '').toLowerCase()
-  if (targetRoles && titleLower.includes(targetRoles)) score += 12
+  for (const role of targetRoles) {
+    if (titleLower.includes(role.toLowerCase())) score += 12
+  }
 
   return Math.min(Math.round(score), 100)
-}
-
-function clean(s) {
-  return s.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim()
 }
 
 async function deepseekEnhance(jobs, apiKey, profile, region, visaSponsorship) {

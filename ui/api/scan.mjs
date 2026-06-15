@@ -1,7 +1,7 @@
 // Vercel Serverless Function — /api/scan
 // Scans multiple job boards for UAE roles with region + visa sponsorship filters.
 
-const REGION_MAP: Record<string, string> = {
+const REGION_MAP = {
   'all': 'United Arab Emirates',
   'dubai': 'Dubai',
   'abu-dhabi': 'Abu Dhabi',
@@ -12,19 +12,19 @@ const REGION_MAP: Record<string, string> = {
 const UAE_JOB_BOARDS = [
   {
     name: 'Indeed UAE',
-    url: (q: string, region: string) => {
+    url: (q, region) => {
       const loc = REGION_MAP[region] || 'United Arab Emirates'
       return `https://ae.indeed.com/jobs?q=${encodeURIComponent(q)}&l=${encodeURIComponent(loc)}&sort=date&limit=50`
     },
   },
   {
     name: 'Gulftalent',
-    url: (q: string, _region: string) =>
+    url: (q, _region) =>
       `https://www.gulftalent.com/jobs?keywords=${encodeURIComponent(q)}&country=AE`,
   },
   {
     name: 'Naukri Gulf',
-    url: (q: string, _region: string) =>
+    url: (q, _region) =>
       `https://www.naukrigulf.com/jobs?keywords=${encodeURIComponent(q)}&location=uae`,
   },
 ]
@@ -49,7 +49,7 @@ const VISA_KEYWORDS = [
   'international', 'expat', 'work permit',
 ]
 
-export default async function handler(req: any, res: any) {
+export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' })
   }
@@ -59,11 +59,11 @@ export default async function handler(req: any, res: any) {
   const positiveKws = portals?.positiveKeywords || ['Data Analyst', 'IT Specialist']
   const negativeKws = portals?.negativeKeywords || ['Senior', 'Lead', 'Manager']
 
-  const results: any[] = []
-  const seen = new Set<string>()
+  const results = []
+  const seen = new Set()
 
   const queries = profile?.targetRoles
-    ? profile.targetRoles.split(',').map((r: string) => r.trim()).filter(Boolean)
+    ? profile.targetRoles.split(',').map(r => r.trim()).filter(Boolean)
     : SEARCH_QUERIES
 
   for (const board of UAE_JOB_BOARDS) {
@@ -90,7 +90,7 @@ export default async function handler(req: any, res: any) {
           seen.add(key)
 
           const titleLower = job.title.toLowerCase()
-          if (negativeKws.some((k: string) => titleLower.includes(k.toLowerCase()))) continue
+          if (negativeKws.some(k => titleLower.includes(k.toLowerCase()))) continue
 
           const hasVisa = detectVisaSponsorship(job, html)
           if (visaSponsorship && !hasVisa) continue
@@ -135,12 +135,12 @@ export default async function handler(req: any, res: any) {
   })
 }
 
-function parseJobListings(html: string, source: string): any[] {
-  const jobs: any[] = []
+function parseJobListings(html, source) {
+  const jobs = []
 
   if (source === 'Indeed UAE') {
     const jobRegex = /data-jk="([^"]+)"[\s\S]*?jobTitle[^>]*>([^<]+)<[\s\S]*?companyName[^>]*>([^<]+)<[\s\S]*?companyLocation[^>]*>([^<]+)</g
-    let m: RegExpExecArray | null
+    let m
     while ((m = jobRegex.exec(html)) !== null) {
       jobs.push({
         title: clean(m[2]),
@@ -171,7 +171,7 @@ function parseJobListings(html: string, source: string): any[] {
 
   if (source === 'Gulftalent') {
     const cardsRegex = /<div class="job-card"[^>]*>([\s\S]*?)<\/div>\s*<\/div>\s*<\/div>/g
-    let m: RegExpExecArray | null
+    let m
     while ((m = cardsRegex.exec(html)) !== null) {
       const card = m[1]
       const titleMatch = card.match(/<h2[^>]*>([^<]+)</)
@@ -209,18 +209,12 @@ function parseJobListings(html: string, source: string): any[] {
   return jobs
 }
 
-function detectVisaSponsorship(job: any, rawHtml?: string): boolean {
+function detectVisaSponsorship(job, rawHtml) {
   const text = `${job.title} ${job.company} ${job.description || ''} ${rawHtml || ''}`.toLowerCase()
   return VISA_KEYWORDS.some(kw => text.includes(kw))
 }
 
-function scoreJob(
-  job: { title: string; company: string; location: string },
-  positiveKws: string[],
-  profile: any,
-  region: string,
-  hasVisa: boolean,
-): number {
+function scoreJob(job, positiveKws, profile, region, hasVisa) {
   let score = 50
 
   const titleLower = job.title.toLowerCase()
@@ -261,23 +255,17 @@ function scoreJob(
     if (companyLower.includes(c)) score += 5
   }
 
-  const targetRoles = profile?.targetRoles?.toLowerCase() || ''
+  const targetRoles = (profile?.targetRoles || '').toLowerCase()
   if (targetRoles && titleLower.includes(targetRoles)) score += 12
 
   return Math.min(Math.round(score), 100)
 }
 
-function clean(s: string): string {
+function clean(s) {
   return s.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim()
 }
 
-async function deepseekEnhance(
-  jobs: any[],
-  apiKey: string,
-  profile: any,
-  region: string,
-  visaSponsorship: boolean,
-): Promise<any[]> {
+async function deepseekEnhance(jobs, apiKey, profile, region, visaSponsorship) {
   const regionLabel = REGION_MAP[region] || 'UAE'
   const prompt = `You are a UAE job search expert. Analyze these listings for a candidate with:
 - Target roles: ${profile?.targetRoles || 'Data Analyst, IT Specialist'}
@@ -306,13 +294,13 @@ ${JSON.stringify(jobs.map(j => ({ id: j.id, title: j.title, company: j.company, 
 
   if (!response.ok) throw new Error(`DeepSeek API error: ${response.status}`)
 
-  const data: any = await response.json()
+  const data = await response.json()
   const content = data?.choices?.[0]?.message?.content
   if (!content) return jobs
 
   try {
     const scores = JSON.parse(content.replace(/```json\s*|\s*```/g, '').trim())
-    const scoreMap = new Map(scores.map((s: any) => [s.id, { score: s.score, visaSponsorship: s.visaSponsorship }]))
+    const scoreMap = new Map(scores.map(s => [s.id, { score: s.score, visaSponsorship: s.visaSponsorship }]))
 
     for (const job of jobs) {
       if (scoreMap.has(job.id)) {

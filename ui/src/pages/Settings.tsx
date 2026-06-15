@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useApp } from '../lib/context'
+import { seedFromFiles } from '../lib/data'
 
 export default function SettingsPage() {
   const { user, signInSupabase, signUpSupabase, signOutSupabase, syncToSupabase, syncFromSupabase, showToast, refresh } = useApp()
@@ -52,7 +53,6 @@ export default function SettingsPage() {
   const handleImport = async () => {
     try {
       const parsed = JSON.parse(importText)
-      const { seedFromFiles } = await import('../lib/data')
       await seedFromFiles(
         parsed.applications,
         parsed.cv,

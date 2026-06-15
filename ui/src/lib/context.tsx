@@ -76,7 +76,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const refresh = useCallback(async () => {
     setState(s => ({ ...s, loading: true }))
-    const [applications, pipeline, followUps, profile, portals, cv] = await Promise.all([
+    const [applications, pipeline, followUps, localProfile, portals, cv] = await Promise.all([
       loadApplications(),
       loadPipeline(),
       loadFollowUps(),
@@ -84,6 +84,39 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       loadPortals(),
       loadCv(),
     ])
+
+    // Pull profile from Supabase if signed in — localStorage may be empty on first login
+    let profile = localProfile
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session) {
+        const { data: pd } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('user_id', session.user.id)
+          .maybeSingle()
+        if (pd) {
+          profile = {
+            name: pd.name || '',
+            email: pd.email || '',
+            phone: pd.phone || '',
+            location: pd.location || '',
+            linkedin: pd.linkedin || '',
+            portfolioUrl: pd.portfolio_url || '',
+            visaStatus: pd.visa_status || '',
+            targetRoles: pd.target_roles || '',
+            salaryMin: '',
+            salaryMax: '',
+            narrative: pd.narrative || '',
+            headline: pd.headline || '',
+            superpowers: typeof pd.superpowers === 'string'
+              ? JSON.parse(pd.superpowers)
+              : pd.superpowers || [],
+          }
+        }
+      }
+    } catch { /* no session or network error — use local profile */ }
+
     setState(s => ({
       ...s, applications, pipeline, followUps, profile, portals, cv, loading: false,
     }))

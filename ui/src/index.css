@@ -59,6 +59,9 @@ body {
 
 .view-wrap {
   animation: fadeUp 0.2s ease both;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
 }
 
 .cv-rendered h1 {

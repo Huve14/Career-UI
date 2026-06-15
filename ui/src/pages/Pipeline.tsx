@@ -61,9 +61,14 @@ export default function Pipeline() {
                 <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
               </svg>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 12, color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {item.url.replace(/^https?:\/\//, '').slice(0, 70)}...
-                </div>
+                {item.company && item.role && (
+                  <div style={{ fontFamily: "'Space Grotesk',sans-serif", fontSize: 13, fontWeight: 600, color: 'var(--text)', marginBottom: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {item.company} — {item.role}
+                  </div>
+                )}
+                <a href={item.url} target="_blank" rel="noopener noreferrer" style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 11, color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block', textDecoration: 'none' }}>
+                  {item.url.replace(/^https?:\/\//, '').slice(0, 80)}
+                </a>
                 <div style={{ fontSize: 11, color: 'var(--text-faint)', marginTop: 2 }}>Added {item.added}</div>
               </div>
               <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>

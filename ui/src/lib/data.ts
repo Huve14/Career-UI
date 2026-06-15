@@ -61,6 +61,9 @@ export async function loadApplications(): Promise<Application[]> {
       return parseApplicationsTable(content)
     } catch { return [] }
   }
+  // Browser: fetch live from GitHub
+  const content = await fetchGitHubRaw('data/applications.md')
+  if (content) return parseApplicationsTable(content)
   return loadStorage().applications
 }
 
@@ -80,6 +83,16 @@ export async function saveApplications(apps: Application[]): Promise<void> {
 
 // ── Pipeline ──────────────────────────────────────────────────
 
+const GITHUB_RAW = 'https://raw.githubusercontent.com/Huve14/Career-UI/main'
+
+async function fetchGitHubRaw(path: string): Promise<string | null> {
+  try {
+    const res = await fetch(`${GITHUB_RAW}/${path}`)
+    if (res.ok) return res.text()
+  } catch { /* network error */ }
+  return null
+}
+
 export async function loadPipeline(): Promise<PipelineItem[]> {
   if (isElectron) {
     try {
@@ -87,6 +100,9 @@ export async function loadPipeline(): Promise<PipelineItem[]> {
       return parsePipeline(content)
     } catch { return [] }
   }
+  // Browser: fetch live from GitHub (data/pipeline.md is committed by daily scan)
+  const content = await fetchGitHubRaw('data/pipeline.md')
+  if (content) return parsePipeline(content)
   return loadStorage().pipeline
 }
 
@@ -264,12 +280,19 @@ function parseApplicationsTable(md: string): Application[] {
 }
 
 function parsePipeline(md: string): PipelineItem[] {
-  const urls = md.split('\n').filter(l => l.trim().startsWith('- ') && l.includes('http'))
-  return urls.map((u, i) => ({
-    id: i + 1,
-    url: u.replace(/^-\s*/, '').trim(),
-    added: new Date().toISOString().slice(0, 10),
-  }))
+  const today = new Date().toISOString().slice(0, 10)
+  return md.split('\n')
+    .filter(l => l.trim().startsWith('- [ ]') && l.includes('http'))
+    .map((line, i) => {
+      const urlMatch = line.match(/https?:\/\/[^\s|]+/)
+      if (!urlMatch) return null
+      const url = urlMatch[0].replace(/\|.*$/, '').trim()
+      const parts = line.split('|').map(p => p.trim())
+      const company = parts[1] || ''
+      const role = parts[2] || ''
+      return { id: i + 1, url, added: today, company, role }
+    })
+    .filter(Boolean) as PipelineItem[]
 }
 
 function parseFollowUps(md: string): FollowUp[] {

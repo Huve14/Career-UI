@@ -16,6 +16,8 @@ export interface PipelineItem {
   id: number
   url: string
   added: string
+  company?: string
+  role?: string
 }
 
 export interface FollowUp {

@@ -19,7 +19,7 @@ interface LiveJob {
 }
 
 export default function ScanJobs() {
-  const { showToast, pipeline, setPipeline } = useApp()
+  const { showToast, pipeline, setPipeline, profile } = useApp()
   const [scanning, setScanning] = useState(false)
   const [region, setRegion] = useState('all')
   const [visaOnly, setVisaOnly] = useState(false)
@@ -36,7 +36,11 @@ export default function ScanJobs() {
     setResults([])
     setScanInfo(null)
     try {
-      const res = await fetch(`/api/scan-live?t=${Date.now()}`, { method: 'GET' })
+      const res = await fetch(`/api/scan-live?t=${Date.now()}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ profile }),
+      })
       if (!res.ok) throw new Error(`Server error ${res.status}`)
       const data = await res.json()
 
@@ -117,7 +121,8 @@ export default function ScanJobs() {
           Scan Jobs
         </h1>
         <p style={{ fontSize: 13.5, color: 'var(--text-muted)', margin: 0 }}>
-          Live scan of {REGIONS.length > 0 ? '29' : ''} company ATS boards (Greenhouse · Ashby · Lever) — zero tokens.
+          Live scan of 29 company ATS boards filtered to your CV.
+          {profile?.targetRoles && <span style={{ color: 'var(--accent)', marginLeft: 6 }}>{profile.targetRoles}</span>}
         </p>
       </div>
 

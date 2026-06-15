@@ -1,8 +1,9 @@
 // Vercel Serverless Function — /api/scan-live
 // Hits public ATS APIs (Greenhouse, Ashby, Lever) directly — zero tokens.
-// Returns fresh job listings filtered by title keywords for UAE roles.
+// Filters results against the user's profile (target roles + skills from CV).
 
-const TITLE_KEYWORDS = [
+// Fallback keywords used when no profile is provided
+const DEFAULT_KEYWORDS = [
   'data analyst', 'business intelligence', 'bi analyst', 'bi developer',
   'analytics engineer', 'it specialist', 'it manager', 'it support',
   'systems administrator', 'cloud administrator', 'data engineer',
@@ -10,12 +11,65 @@ const TITLE_KEYWORDS = [
   'ai automation', 'cybersecurity analyst', 'it infrastructure',
   'technical support', 'support engineer', 'technical analyst',
   'power bi', 'tableau', 'etl', 'data warehouse', 'forward deployed',
-  'machine learning engineer', 'platform engineer', 'site reliability',
 ]
 
-const TITLE_BLOCK = ['intern', 'director', 'vp ', 'vice president', 'head of', 'chief', 'counsel', 'attorney', 'legal', 'recruiter', 'marketing manager', 'account executive', 'account manager', 'sales development']
+const TITLE_BLOCK = [
+  'intern', 'director', 'vp ', 'vice president', 'head of', 'chief',
+  'counsel', 'attorney', 'legal', 'recruiter', 'account executive',
+  'account manager', 'sales development', 'marketing manager',
+]
 
-// Curated list: UAE-relevant companies with public ATS boards
+// Build a title keyword list from the user's profile
+function buildKeywordsFromProfile(profile) {
+  const keywords = new Set()
+
+  // Split target roles: "Data Analyst, IT Specialist" → ['data analyst', 'it specialist']
+  if (profile?.targetRoles) {
+    for (const role of profile.targetRoles.split(',')) {
+      const r = role.trim().toLowerCase()
+      if (r.length > 2) keywords.add(r)
+      // Also add individual words from multi-word roles
+      for (const word of r.split(' ')) {
+        if (word.length > 4) keywords.add(word)
+      }
+    }
+  }
+
+  // Extract role-like terms from headline
+  if (profile?.headline) {
+    const parts = profile.headline.split(/[|,&\-]/).map(s => s.trim().toLowerCase())
+    for (const p of parts) {
+      if (p.length > 3 && p.length < 40) keywords.add(p)
+    }
+  }
+
+  // Skills that map to job titles
+  const SKILL_TO_TITLE = {
+    'power bi': 'power bi', 'tableau': 'tableau', 'sql': 'sql developer',
+    'etl': 'etl', 'python': 'python', 'postgresql': 'database',
+    'n8n': 'automation', 'zoho': 'zoho analytics', 'bi': 'business intelligence',
+    'microsoft 365': 'it administrator', 'm365': 'it administrator',
+    'azure': 'cloud administrator', 'aws': 'cloud administrator',
+  }
+  if (Array.isArray(profile?.superpowers)) {
+    for (const sp of profile.superpowers) {
+      const lower = sp.toLowerCase()
+      for (const [skill, titleTerm] of Object.entries(SKILL_TO_TITLE)) {
+        if (lower.includes(skill)) keywords.add(titleTerm)
+      }
+    }
+  }
+
+  return keywords.size > 0 ? [...keywords] : DEFAULT_KEYWORDS
+}
+
+function buildTitleFilter(keywords) {
+  return (title) => {
+    const lower = title.toLowerCase()
+    if (TITLE_BLOCK.some(k => lower.includes(k))) return false
+    return keywords.some(k => lower.includes(k))
+  }
+}
 const COMPANIES = [
   // AI-first companies (most relevant for candidate profile)
   { name: 'Anthropic',        type: 'greenhouse', slug: 'anthropic' },
@@ -51,11 +105,6 @@ const COMPANIES = [
   { name: 'Amplemarket EU',   type: 'greenhouse', slug: 'amplemarket', region: 'eu' },
 ]
 
-function passesTitleFilter(title) {
-  const lower = title.toLowerCase()
-  if (TITLE_BLOCK.some(k => lower.includes(k))) return false
-  return TITLE_KEYWORDS.some(k => lower.includes(k))
-}
 
 async function fetchWithTimeout(url, timeoutMs = 8000) {
   const controller = new AbortController()
@@ -114,16 +163,16 @@ async function scanLever(company) {
   }))
 }
 
-async function scanCompany(company) {
+async function scanCompany(company, titleFilter) {
   try {
     let jobs
     if (company.type === 'greenhouse') jobs = await scanGreenhouse(company)
     else if (company.type === 'ashby') jobs = await scanAshby(company)
     else if (company.type === 'lever') jobs = await scanLever(company)
     else return []
-    return jobs.filter(j => j.url && passesTitleFilter(j.title))
+    return jobs.filter(j => j.url && titleFilter(j.title))
   } catch {
-    return [] // silently skip failed companies
+    return []
   }
 }
 
@@ -132,12 +181,15 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  // Allow caller to pass extra companies from their portals config
+  // Profile from client — used to personalise the title filter
+  const profile = req.body?.profile || null
+  const keywords = buildKeywordsFromProfile(profile)
+  const titleFilter = buildTitleFilter(keywords)
+
   const extraCompanies = req.body?.companies || []
   const allCompanies = [...COMPANIES, ...extraCompanies]
 
-  // Fan out — all companies in parallel (Vercel function has 10s limit on Hobby)
-  const results = await Promise.all(allCompanies.map(scanCompany))
+  const results = await Promise.all(allCompanies.map(c => scanCompany(c, titleFilter)))
   const jobs = results.flat()
 
   // Deduplicate by URL

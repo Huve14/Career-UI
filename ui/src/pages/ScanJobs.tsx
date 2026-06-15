@@ -1,15 +1,35 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { useApp } from '../lib/context'
 
 // ── Auto Scan ─────────────────────────────────────────────────
 
 const REGIONS = [
-  { value: 'all', label: 'All UAE' },
-  { value: 'dubai', label: 'Dubai' },
-  { value: 'abu-dhabi', label: 'Abu Dhabi' },
-  { value: 'sharjah', label: 'Sharjah' },
-  { value: 'remote', label: 'Remote / WFH' },
+  { value: 'all',            label: 'All UAE' },
+  { value: 'dubai',          label: 'Dubai' },
+  { value: 'abu-dhabi',      label: 'Abu Dhabi' },
+  { value: 'sharjah',        label: 'Sharjah' },
+  { value: 'ajman',          label: 'Ajman' },
+  { value: 'ras-al-khaimah', label: 'Ras Al Khaimah' },
+  { value: 'fujairah',       label: 'Fujairah' },
+  { value: 'umm-al-quwain',  label: 'Umm Al Quwain' },
+  { value: 'remote',         label: 'Remote / WFH' },
+  { value: 'mena',           label: 'MENA' },
+  { value: 'emea',           label: 'EMEA' },
 ]
+
+function matchesRegion(loc: string, region: string): boolean {
+  const l = loc.toLowerCase()
+  if (region === 'all') return true
+  if (region === 'remote') return /remote|wfh/.test(l) || !loc.trim()
+  if (region === 'mena') return /mena|middle east/.test(l)
+  if (region === 'emea') return /\bemea\b/.test(l)
+  const labels: Record<string, string> = {
+    'dubai': 'dubai', 'abu-dhabi': 'abu dhabi', 'sharjah': 'sharjah',
+    'ajman': 'ajman', 'ras-al-khaimah': 'ras al khaimah',
+    'fujairah': 'fujairah', 'umm-al-quwain': 'umm al quwain',
+  }
+  return l.includes(labels[region] ?? region)
+}
 
 interface LiveJob {
   id: number
@@ -25,17 +45,27 @@ export default function ScanJobs() {
   const [scanning, setScanning] = useState(false)
   const [region, setRegion] = useState('all')
   const [visaOnly, setVisaOnly] = useState(false)
-  const [results, setResults] = useState<LiveJob[]>([])
+  const [rawResults, setRawResults] = useState<LiveJob[]>([])
   const [manualInput, setManualInput] = useState('')
   const [method, setMethod] = useState<'auto' | 'manual'>('auto')
   const [scanInfo, setScanInfo] = useState<{ scanned: number; ts: string } | null>(null)
 
-  const regionLabel = REGIONS.find(r => r.value === region)?.label || 'All UAE'
+  // Derive displayed results reactively — region/visa chips re-filter without re-scanning
+  const results = useMemo(() => {
+    let jobs = rawResults
+    if (region !== 'all') {
+      jobs = jobs.filter(j => matchesRegion(j.location, region))
+    }
+    if (visaOnly) {
+      jobs = jobs.filter(j => /sponsor|visa|relocation|expat/i.test(j.title + ' ' + j.location))
+    }
+    return jobs
+  }, [rawResults, region, visaOnly])
 
   const triggerAutoScan = async () => {
     if (scanning) return
     setScanning(true)
-    setResults([])
+    setRawResults([])
     setScanInfo(null)
     try {
       const res = await fetch(`/api/scan-live?t=${Date.now()}`, {
@@ -46,20 +76,8 @@ export default function ScanJobs() {
       if (!res.ok) throw new Error(`Server error ${res.status}`)
       const data = await res.json()
 
-      let jobs: LiveJob[] = (data.jobs || []).map((j: any, i: number) => ({ ...j, id: i + 1 }))
-
-      if (region !== 'all') {
-        jobs = jobs.filter(j => {
-          const loc = j.location.toLowerCase()
-          if (region === 'remote') return loc.includes('remote') || loc.includes('wfh') || !loc
-          return loc.includes(regionLabel.toLowerCase()) || !loc
-        })
-      }
-      if (visaOnly) {
-        jobs = jobs.filter(j => /sponsor|visa|relocation|expat/i.test(j.title + ' ' + j.location))
-      }
-
-      setResults(jobs)
+      const jobs: LiveJob[] = (data.jobs || []).map((j: any, i: number) => ({ ...j, id: i + 1 }))
+      setRawResults(jobs)
       setScanInfo({ scanned: data.scanned || 0, ts: data.ts || '' })
       showToast(`${jobs.length} jobs found across ${data.scanned} companies`)
     } catch (e: any) {
@@ -71,7 +89,7 @@ export default function ScanJobs() {
   const triggerManualScan = async () => {
     if (scanning || !manualInput.trim()) return
     setScanning(true)
-    setResults([])
+    setRawResults([])
     const lines = manualInput.split('\n').map(l => l.trim()).filter(Boolean)
     try {
       const res = await fetch('/api/scan', {
@@ -90,7 +108,7 @@ export default function ScanJobs() {
           score: j.score,
         }))
         parsed.sort((a, b) => (b.score ?? 0) - (a.score ?? 0))
-        setResults(parsed)
+        setRawResults(parsed)
         showToast(`${parsed.length} jobs analyzed`)
       }
     } catch (e: any) {
@@ -194,6 +212,11 @@ export default function ScanJobs() {
           <div style={{ padding: '14px 20px 13px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
             <span style={{ fontFamily: "'Space Grotesk',sans-serif", fontSize: 14, fontWeight: 600, color: 'var(--text)' }}>
               {results.length} matching jobs
+              {rawResults.length > 0 && results.length !== rawResults.length && (
+                <span style={{ fontSize: 11.5, fontWeight: 400, color: 'var(--text-faint)', marginLeft: 8 }}>
+                  ({rawResults.length} total)
+                </span>
+              )}
             </span>
             {scanInfo && (
               <span style={{ fontSize: 11, color: 'var(--text-faint)' }}>

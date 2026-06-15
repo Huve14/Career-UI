@@ -260,7 +260,7 @@ select.form-input {
   padding: 0 !important;
   font-family: 'DM Sans', sans-serif !important;
 }
-/* Hide the CSE's own search box — we use our custom one above */
+/* gcse-searchresults-only has no search box — hide any stray one just in case */
 .cse-wrap .gsc-search-box,
 .cse-wrap .gsc-search-box-tools { display: none !important; }
 .cse-wrap .gsc-results-wrapper-overlay,

@@ -60,6 +60,8 @@ export default function ScanJobs() {
       setCseLoaded(true)
       return
     }
+    // Force inline (non-overlay) results mode before the script parses the DOM
+    ;(window as any).__gcse = { parsetags: 'auto' }
     const s = document.createElement('script')
     s.async = true
     s.src = `https://cse.google.com/cse.js?cx=${CSE_ID}`
@@ -306,7 +308,7 @@ export default function ScanJobs() {
 
       {/* ── Google CSE results — always mounted, shown only on 'google' tab ── */}
       <div style={{ display: method === 'google' ? 'block' : 'none' }} className="cse-wrap">
-        <div className="gcse-search"></div>
+        <div className="gcse-searchresults-only"></div>
       </div>
 
       {/* ── Scanning spinner (auto/manual only) ─────────────────── */}

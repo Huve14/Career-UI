@@ -14,6 +14,8 @@ Run `/career-ops pipeline` to process pending items.
 - [ ] https://jobs.ashbyhq.com/synthesia/73b423b5-0fcc-422e-9490-0bb22bcd5a4e | Synthesia | Technical Support Associate
 - [ ] https://job-boards.greenhouse.io/hightouch/jobs/5718912004 | Hightouch | Forward Deployed Marketing Data Scientist
 
+- [ ] https://job-boards.greenhouse.io/anthropic/jobs/5237762008 | Anthropic | Staff Software Engineer, Infrastructure Asset Systems
+
 ## Procesadas
 
 <!-- Evaluated jobs are moved here -->

@@ -16,6 +16,8 @@ Run `/career-ops pipeline` to process pending items.
 
 - [ ] https://job-boards.greenhouse.io/anthropic/jobs/5237762008 | Anthropic | Staff Software Engineer, Infrastructure Asset Systems
 
+- [ ] https://jobs.ashbyhq.com/supabase/ed6cedb1-b9bf-4609-ac5c-c75c33b31bf3 | Supabase | Site Reliability Engineer
+
 ## Procesadas
 
 <!-- Evaluated jobs are moved here -->

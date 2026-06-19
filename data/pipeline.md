@@ -18,6 +18,9 @@ Run `/career-ops pipeline` to process pending items.
 
 - [ ] https://jobs.ashbyhq.com/supabase/ed6cedb1-b9bf-4609-ac5c-c75c33b31bf3 | Supabase | Site Reliability Engineer
 
+- [ ] https://jobs.ashbyhq.com/faculty/aafc6889-c160-4172-b5ae-87a3557830d8 | Faculty | Senior Data Scientist 
+- [ ] https://jobs.ashbyhq.com/faculty/7a274427-f628-4fed-8e40-2832eeb5bfe7 | Faculty | Lead Data Scientist 
+
 ## Procesadas
 
 <!-- Evaluated jobs are moved here -->

@@ -24,6 +24,10 @@ Run `/career-ops pipeline` to process pending items.
 - [ ] https://jobs.ashbyhq.com/zapier/1b18213d-3ccb-45f1-9175-5fb720aa854a | Zapier | Sr. IT Systems Engineer
 - [ ] https://jobs.ashbyhq.com/synthesia/aa06e798-ba8a-4c7d-89dd-832678c7012f | Synthesia | Senior Site Reliability Enigneer
 
+- [ ] https://jobs.ashbyhq.com/deepgram/fdb4073a-4c1c-48d6-b6d5-f407d3e78d17 | Deepgram | Research Staff, Data Science
+- [ ] https://jobs.ashbyhq.com/faculty/92c892cd-1f6c-443d-9cd8-e4902f9b7fb6 | Faculty | Lead Data Scientist 
+- [ ] https://jobs.ashbyhq.com/faculty/fd216949-66f6-4258-9e52-f2067503b75f | Faculty | Data Scientist 
+
 ## Procesadas
 
 <!-- Evaluated jobs are moved here -->

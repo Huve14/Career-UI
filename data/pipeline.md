@@ -28,6 +28,8 @@ Run `/career-ops pipeline` to process pending items.
 - [ ] https://jobs.ashbyhq.com/faculty/92c892cd-1f6c-443d-9cd8-e4902f9b7fb6 | Faculty | Lead Data Scientist 
 - [ ] https://jobs.ashbyhq.com/faculty/fd216949-66f6-4258-9e52-f2067503b75f | Faculty | Data Scientist 
 
+- [ ] https://jobs.ashbyhq.com/supabase/44f6de1c-0fdc-4d46-aa3e-7d57b8be38b2 | Supabase | Senior Data Engineer
+
 ## Procesadas
 
 <!-- Evaluated jobs are moved here -->

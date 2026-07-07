@@ -30,6 +30,8 @@ Run `/career-ops pipeline` to process pending items.
 
 - [ ] https://jobs.ashbyhq.com/supabase/44f6de1c-0fdc-4d46-aa3e-7d57b8be38b2 | Supabase | Senior Data Engineer
 
+- [ ] https://jobs.ashbyhq.com/photoroom/66625037-19fb-46a0-af0f-0390ba16a955 | Photoroom | Senior Site Reliability Engineer
+
 ## Procesadas
 
 <!-- Evaluated jobs are moved here -->

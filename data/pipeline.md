@@ -32,6 +32,8 @@ Run `/career-ops pipeline` to process pending items.
 
 - [ ] https://jobs.ashbyhq.com/photoroom/66625037-19fb-46a0-af0f-0390ba16a955 | Photoroom | Senior Site Reliability Engineer
 
+- [ ] https://jobs.ashbyhq.com/deepgram/d75d6f84-1d54-4354-a364-609b48267658 | Deepgram | Partner Success Engineer (Infrastructure)
+
 ## Procesadas
 
 <!-- Evaluated jobs are moved here -->

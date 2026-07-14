@@ -34,6 +34,8 @@ Run `/career-ops pipeline` to process pending items.
 
 - [ ] https://jobs.ashbyhq.com/deepgram/d75d6f84-1d54-4354-a364-609b48267658 | Deepgram | Partner Success Engineer (Infrastructure)
 
+- [ ] https://job-boards.greenhouse.io/hightouch/jobs/6115603004 | Hightouch | Deliverability Specialist
+
 ## Procesadas
 
 <!-- Evaluated jobs are moved here -->

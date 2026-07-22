@@ -36,6 +36,8 @@ Run `/career-ops pipeline` to process pending items.
 
 - [ ] https://job-boards.greenhouse.io/hightouch/jobs/6115603004 | Hightouch | Deliverability Specialist
 
+- [ ] https://job-boards.greenhouse.io/hightouch/jobs/6122160004 | Hightouch | Forward Deployed Analytics Engineer 
+
 ## Procesadas
 
 <!-- Evaluated jobs are moved here -->

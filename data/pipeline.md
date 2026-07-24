@@ -38,6 +38,8 @@ Run `/career-ops pipeline` to process pending items.
 
 - [ ] https://job-boards.greenhouse.io/hightouch/jobs/6122160004 | Hightouch | Forward Deployed Analytics Engineer 
 
+- [ ] https://jobs.ashbyhq.com/elevenlabs/34147b32-c569-46f9-9e8d-8b6f22e9f9ea | ElevenLabs | General Manager - Colombia 
+
 ## Procesadas
 
 <!-- Evaluated jobs are moved here -->

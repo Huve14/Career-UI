@@ -40,6 +40,8 @@ Run `/career-ops pipeline` to process pending items.
 
 - [ ] https://jobs.ashbyhq.com/elevenlabs/34147b32-c569-46f9-9e8d-8b6f22e9f9ea | ElevenLabs | General Manager - Colombia 
 
+- [ ] https://jobs.ashbyhq.com/deepgram/681c5324-1234-4222-b783-a8a7a9440005 | Deepgram | Senior Program Manager, Data Operations
+
 ## Procesadas
 
 <!-- Evaluated jobs are moved here -->

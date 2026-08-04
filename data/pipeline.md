@@ -42,6 +42,8 @@ Run `/career-ops pipeline` to process pending items.
 
 - [ ] https://jobs.ashbyhq.com/deepgram/681c5324-1234-4222-b783-a8a7a9440005 | Deepgram | Senior Program Manager, Data Operations
 
+- [ ] https://jobs.lever.co/spotify/759f6c62-e450-4112-9db6-0c01eef47c76 | Spotify | Data Scientist
+
 ## Procesadas
 
 <!-- Evaluated jobs are moved here -->

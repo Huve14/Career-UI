@@ -44,6 +44,8 @@ Run `/career-ops pipeline` to process pending items.
 
 - [ ] https://jobs.lever.co/spotify/759f6c62-e450-4112-9db6-0c01eef47c76 | Spotify | Data Scientist
 
+- [ ] https://jobs.ashbyhq.com/supabase/59083a14-b2b6-4dd8-8037-739aa1ad1e22 | Supabase | Senior Data Analyst - Marketing
+
 ## Procesadas
 
 <!-- Evaluated jobs are moved here -->

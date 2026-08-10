@@ -46,6 +46,8 @@ Run `/career-ops pipeline` to process pending items.
 
 - [ ] https://jobs.ashbyhq.com/supabase/59083a14-b2b6-4dd8-8037-739aa1ad1e22 | Supabase | Senior Data Analyst - Marketing
 
+- [ ] https://job-boards.greenhouse.io/anthropic/jobs/5215141008 | Anthropic | Data Center OFE Strategic Sourcing Lead
+
 ## Procesadas
 
 <!-- Evaluated jobs are moved here -->

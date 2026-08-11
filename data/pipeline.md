@@ -48,6 +48,8 @@ Run `/career-ops pipeline` to process pending items.
 
 - [ ] https://job-boards.greenhouse.io/anthropic/jobs/5215141008 | Anthropic | Data Center OFE Strategic Sourcing Lead
 
+- [ ] https://job-boards.greenhouse.io/anthropic/jobs/5230394008 | Anthropic | Staff+ Site Reliability Engineer, Safeguards ML Infra
+
 ## Procesadas
 
 <!-- Evaluated jobs are moved here -->

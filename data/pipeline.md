@@ -50,6 +50,8 @@ Run `/career-ops pipeline` to process pending items.
 
 - [ ] https://job-boards.greenhouse.io/anthropic/jobs/5230394008 | Anthropic | Staff+ Site Reliability Engineer, Safeguards ML Infra
 
+- [ ] https://coreweave.com/careers/job?4683042006&board=coreweave&gh_jid=4683042006 | Weights & Biases (CoreWeave) | Staff Business Systems Engineer – Vertex Tax Systems
+
 ## Procesadas
 
 <!-- Evaluated jobs are moved here -->

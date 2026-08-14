@@ -52,6 +52,8 @@ Run `/career-ops pipeline` to process pending items.
 
 - [ ] https://coreweave.com/careers/job?4683042006&board=coreweave&gh_jid=4683042006 | Weights & Biases (CoreWeave) | Staff Business Systems Engineer – Vertex Tax Systems
 
+- [ ] https://jobs.ashbyhq.com/cohere/2dc8b505-128a-4bc8-b8c1-7084e7d26530 | Cohere | Government Affairs Lead - Middle East (UAE or Saudi Arabia based)
+
 ## Procesadas
 
 <!-- Evaluated jobs are moved here -->

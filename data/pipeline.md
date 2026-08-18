@@ -54,6 +54,8 @@ Run `/career-ops pipeline` to process pending items.
 
 - [ ] https://jobs.ashbyhq.com/cohere/2dc8b505-128a-4bc8-b8c1-7084e7d26530 | Cohere | Government Affairs Lead - Middle East (UAE or Saudi Arabia based)
 
+- [ ] https://job-boards.greenhouse.io/anthropic/jobs/5114768008 | Anthropic | Staff+ Software Engineer, Data Infrastructure
+
 ## Procesadas
 
 <!-- Evaluated jobs are moved here -->

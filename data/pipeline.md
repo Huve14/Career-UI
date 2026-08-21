@@ -58,6 +58,8 @@ Run `/career-ops pipeline` to process pending items.
 
 - [ ] https://jobs.ashbyhq.com/deepgram/ba60a541-fdf7-44bf-a6bb-0e821f15af54 | Deepgram | Senior Data Scientist, Data Flywheel
 
+- [ ] https://job-boards.greenhouse.io/anthropic/jobs/5397699008 | Anthropic | Head of Vulnerability Disclosure & Security Community
+
 ## Procesadas
 
 <!-- Evaluated jobs are moved here -->

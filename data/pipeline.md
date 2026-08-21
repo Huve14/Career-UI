@@ -60,6 +60,8 @@ Run `/career-ops pipeline` to process pending items.
 
 - [ ] https://job-boards.greenhouse.io/anthropic/jobs/5397699008 | Anthropic | Head of Vulnerability Disclosure & Security Community
 
+- [ ] https://job-boards.greenhouse.io/later/jobs/8657619002 | Later | Account Manager - Bilingual Spanish/English (Remote/Dallas/Fort-Worth Area)
+
 ## Procesadas
 
 <!-- Evaluated jobs are moved here -->

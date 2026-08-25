@@ -66,6 +66,8 @@ Run `/career-ops pipeline` to process pending items.
 
 - [ ] https://job-boards.greenhouse.io/anthropic/jobs/5399160008 | Anthropic | Repairs Program Lead - Data Center Operations
 
+- [ ] https://job-boards.greenhouse.io/anthropic/jobs/5396384008 | Anthropic | IT Systems Engineer, Mobile Client Platform Engineer 
+
 ## Procesadas
 
 <!-- Evaluated jobs are moved here -->

@@ -71,6 +71,9 @@ Run `/career-ops pipeline` to process pending items.
 - [ ] https://job-boards.greenhouse.io/anthropic/jobs/5358116008 | Anthropic | Senior Manager, Infrastructure Tax
 - [ ] https://jobs.ashbyhq.com/faculty/d15d6073-1925-46eb-9464-8b22cd8de6a6 | Faculty | Principal Data Scientist 
 
+- [ ] https://job-boards.greenhouse.io/anthropic/jobs/5396282008 | Anthropic | Incident Management Lead, Data Center Security
+- [ ] https://job-boards.greenhouse.io/hightouch/jobs/6167699004 | Hightouch | Senior GTM Systems Engineer
+
 ## Procesadas
 
 <!-- Evaluated jobs are moved here -->

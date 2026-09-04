@@ -74,6 +74,8 @@ Run `/career-ops pipeline` to process pending items.
 - [ ] https://job-boards.greenhouse.io/anthropic/jobs/5396282008 | Anthropic | Incident Management Lead, Data Center Security
 - [ ] https://job-boards.greenhouse.io/hightouch/jobs/6167699004 | Hightouch | Senior GTM Systems Engineer
 
+- [ ] https://job-boards.greenhouse.io/anthropic/jobs/5416709008 | Anthropic | Staff+ Site Reliability Engineer, Safeguards ML Infra
+
 ## Procesadas
 
 <!-- Evaluated jobs are moved here -->

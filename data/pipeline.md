@@ -76,6 +76,8 @@ Run `/career-ops pipeline` to process pending items.
 
 - [ ] https://job-boards.greenhouse.io/anthropic/jobs/5416709008 | Anthropic | Staff+ Site Reliability Engineer, Safeguards ML Infra
 
+- [ ] https://jobs.ashbyhq.com/deepgram/85ec0b9c-f675-4191-85e4-7e70d61c4d89 | Deepgram | AI Data Readiness Lead
+
 ## Procesadas
 
 <!-- Evaluated jobs are moved here -->

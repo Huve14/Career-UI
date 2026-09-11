@@ -80,6 +80,8 @@ Run `/career-ops pipeline` to process pending items.
 
 - [ ] https://jobs.ashbyhq.com/cohere/291e5dee-dcda-49e6-a1b6-dae0d48f80af | Cohere | Forward Deployed Engineer, Infrastructure Specialist (Middle East)
 
+- [ ] https://jobs.ashbyhq.com/deepgram/bf8ea79f-f380-467e-8349-ea1ea8281316 | Deepgram | People AI & Automation Engineer
+
 ## Procesadas
 
 <!-- Evaluated jobs are moved here -->

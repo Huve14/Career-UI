@@ -82,6 +82,8 @@ Run `/career-ops pipeline` to process pending items.
 
 - [ ] https://jobs.ashbyhq.com/deepgram/bf8ea79f-f380-467e-8349-ea1ea8281316 | Deepgram | People AI & Automation Engineer
 
+- [ ] https://jobs.ashbyhq.com/supabase/b4a2f5e5-5c51-4c1a-abde-a89de27451c7 | Supabase | Engineering Manager, Billing
+
 ## Procesadas
 
 <!-- Evaluated jobs are moved here -->

@@ -86,6 +86,8 @@ Run `/career-ops pipeline` to process pending items.
 
 - [ ] https://job-boards.greenhouse.io/hightouch/jobs/5597121004 | Hightouch | Manager, Strategy Consultants (Agentic Customer Data Platform)
 
+- [ ] https://jobs.ashbyhq.com/cohere/0a77830f-d3a9-4b17-8ce7-58765d5be7e4 | Cohere | IT Support Specialist
+
 ## Procesadas
 
 <!-- Evaluated jobs are moved here -->

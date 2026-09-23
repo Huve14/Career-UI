@@ -91,6 +91,8 @@ Run `/career-ops pipeline` to process pending items.
 - [ ] https://job-boards.greenhouse.io/later/jobs/8657615002 | Later | Influencer Marketing Coordinator - Bilingual Spanish
 - [ ] https://jobs.ashbyhq.com/supabase/ab8d1463-bc97-417f-97b1-bfc1fe619b3e | Supabase | Database Support Engineer (Japanese Speaking)
 
+- [ ] https://job-boards.greenhouse.io/anthropic/jobs/5107890008 | Anthropic | Data Center Controls Engineer
+
 ## Procesadas
 
 <!-- Evaluated jobs are moved here -->

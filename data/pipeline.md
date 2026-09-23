@@ -88,6 +88,9 @@ Run `/career-ops pipeline` to process pending items.
 
 - [ ] https://jobs.ashbyhq.com/cohere/0a77830f-d3a9-4b17-8ce7-58765d5be7e4 | Cohere | IT Support Specialist
 
+- [ ] https://job-boards.greenhouse.io/later/jobs/8657615002 | Later | Influencer Marketing Coordinator - Bilingual Spanish
+- [ ] https://jobs.ashbyhq.com/supabase/ab8d1463-bc97-417f-97b1-bfc1fe619b3e | Supabase | Database Support Engineer (Japanese Speaking)
+
 ## Procesadas
 
 <!-- Evaluated jobs are moved here -->

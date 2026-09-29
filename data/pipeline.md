@@ -93,6 +93,8 @@ Run `/career-ops pipeline` to process pending items.
 
 - [ ] https://job-boards.greenhouse.io/anthropic/jobs/5107890008 | Anthropic | Data Center Controls Engineer
 
+- [ ] https://job-boards.greenhouse.io/anthropic/jobs/5434691008 | Anthropic | Staff / Senior Physical Security Systems Engineer
+
 ## Procesadas
 
 <!-- Evaluated jobs are moved here -->

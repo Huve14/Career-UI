@@ -95,6 +95,8 @@ Run `/career-ops pipeline` to process pending items.
 
 - [ ] https://job-boards.greenhouse.io/anthropic/jobs/5434691008 | Anthropic | Staff / Senior Physical Security Systems Engineer
 
+- [ ] https://jobs.ashbyhq.com/deepgram/1aea5b12-330f-4d3c-b09c-048e5f5f4f3c | Deepgram | Infrastructure Partner Director
+
 ## Procesadas
 
 <!-- Evaluated jobs are moved here -->

@@ -97,6 +97,10 @@ Run `/career-ops pipeline` to process pending items.
 
 - [ ] https://jobs.ashbyhq.com/deepgram/1aea5b12-330f-4d3c-b09c-048e5f5f4f3c | Deepgram | Infrastructure Partner Director
 
+- [ ] https://jobs.ashbyhq.com/elevenlabs/69694001-b760-4939-9a02-e75c046b89d3 | ElevenLabs | Marketing Data Scientist
+- [ ] https://jobs.ashbyhq.com/elevenlabs/41b892ba-b530-44cb-9ae1-178908fc324c | ElevenLabs | Data Scientist - Product Analytics
+- [ ] https://jobs.ashbyhq.com/langchain/e10513d4-1b8d-492f-a6af-94bdae366a1a | LangChain | Analytics Engineer
+
 ## Procesadas
 
 <!-- Evaluated jobs are moved here -->

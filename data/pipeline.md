@@ -101,6 +101,8 @@ Run `/career-ops pipeline` to process pending items.
 - [ ] https://jobs.ashbyhq.com/elevenlabs/41b892ba-b530-44cb-9ae1-178908fc324c | ElevenLabs | Data Scientist - Product Analytics
 - [ ] https://jobs.ashbyhq.com/langchain/e10513d4-1b8d-492f-a6af-94bdae366a1a | LangChain | Analytics Engineer
 
+- [ ] https://jobs.ashbyhq.com/supabase/48950725-e0d9-4025-92d9-f75e1b60ce45 | Supabase | Platform Engineer:Data
+
 ## Procesadas
 
 <!-- Evaluated jobs are moved here -->

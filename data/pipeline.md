@@ -105,6 +105,8 @@ Run `/career-ops pipeline` to process pending items.
 
 - [ ] https://job-boards.greenhouse.io/anthropic/jobs/5445625008 | Anthropic | IT Systems Engineer, Client Platform Engineer, macOS
 
+- [ ] https://job-boards.greenhouse.io/anthropic/jobs/5447118008 | Anthropic | Staff+ Software Engineer, Research Systems Engineering
+
 ## Procesadas
 
 <!-- Evaluated jobs are moved here -->

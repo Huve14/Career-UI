@@ -107,6 +107,8 @@ Run `/career-ops pipeline` to process pending items.
 
 - [ ] https://job-boards.greenhouse.io/anthropic/jobs/5447118008 | Anthropic | Staff+ Software Engineer, Research Systems Engineering
 
+- [ ] https://jobs.ashbyhq.com/langchain/afb91b9b-46d5-4c9d-aa84-a4f1a3f74263 | LangChain | Senior Frontend Engineer, AI Observability & Evals Platform 
+
 ## Procesadas
 
 <!-- Evaluated jobs are moved here -->

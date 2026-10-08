@@ -109,6 +109,8 @@ Run `/career-ops pipeline` to process pending items.
 
 - [ ] https://jobs.ashbyhq.com/langchain/afb91b9b-46d5-4c9d-aa84-a4f1a3f74263 | LangChain | Senior Frontend Engineer, AI Observability & Evals Platform 
 
+- [ ] https://jobs.ashbyhq.com/deepgram/7992391d-a890-41f7-85c8-849e0b878981 | Deepgram | Senior Analytics Engineer - Decision Intelligence
+
 ## Procesadas
 
 <!-- Evaluated jobs are moved here -->

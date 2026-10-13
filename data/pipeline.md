@@ -111,6 +111,9 @@ Run `/career-ops pipeline` to process pending items.
 
 - [ ] https://jobs.ashbyhq.com/deepgram/7992391d-a890-41f7-85c8-849e0b878981 | Deepgram | Senior Analytics Engineer - Decision Intelligence
 
+- [ ] https://job-boards.greenhouse.io/anthropic/jobs/5450479008 | Anthropic | IT Systems Engineer, M&A
+- [ ] https://jobs.ashbyhq.com/elevenlabs/1b90a2b2-1352-458d-b2b7-3900f6e02df5 | ElevenLabs | Mobile Engineer - ElevenMusic
+
 ## Procesadas
 
 <!-- Evaluated jobs are moved here -->

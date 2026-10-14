@@ -114,6 +114,8 @@ Run `/career-ops pipeline` to process pending items.
 - [ ] https://job-boards.greenhouse.io/anthropic/jobs/5450479008 | Anthropic | IT Systems Engineer, M&A
 - [ ] https://jobs.ashbyhq.com/elevenlabs/1b90a2b2-1352-458d-b2b7-3900f6e02df5 | ElevenLabs | Mobile Engineer - ElevenMusic
 
+- [ ] https://jobs.ashbyhq.com/supabase/73ddf93b-fe0c-455d-ba27-cdde0d3fb94f | Supabase | FinOps Data Engineer 
+
 ## Procesadas
 
 <!-- Evaluated jobs are moved here -->

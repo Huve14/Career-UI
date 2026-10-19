@@ -116,6 +116,8 @@ Run `/career-ops pipeline` to process pending items.
 
 - [ ] https://jobs.ashbyhq.com/supabase/73ddf93b-fe0c-455d-ba27-cdde0d3fb94f | Supabase | FinOps Data Engineer 
 
+- [ ] https://job-boards.greenhouse.io/anthropic/jobs/5456018008 | Anthropic | IT Systems Engineer, Client Platform Engineer, ChromeOS
+
 ## Procesadas
 
 <!-- Evaluated jobs are moved here -->

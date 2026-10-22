@@ -120,6 +120,8 @@ Run `/career-ops pipeline` to process pending items.
 
 - [ ] https://jobs.ashbyhq.com/elevenlabs/9aca205e-b2bc-405b-85d6-3d2aadbe49b1 | ElevenLabs | IT Engineer
 
+- [ ] https://jobs.ashbyhq.com/clerk/847d6d6f-aa7a-4799-ae5d-c89018a479b5 | Clerk | Data Scientist
+
 ## Procesadas
 
 <!-- Evaluated jobs are moved here -->

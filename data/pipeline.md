@@ -122,6 +122,8 @@ Run `/career-ops pipeline` to process pending items.
 
 - [ ] https://jobs.ashbyhq.com/clerk/847d6d6f-aa7a-4799-ae5d-c89018a479b5 | Clerk | Data Scientist
 
+- [ ] https://jobs.ashbyhq.com/deepgram/f428c615-65e8-4d4d-84dd-ba0da64f1a9b | Deepgram | Marketing & GTM Data Analyst
+
 ## Procesadas
 
 <!-- Evaluated jobs are moved here -->

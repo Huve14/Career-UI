@@ -124,6 +124,8 @@ Run `/career-ops pipeline` to process pending items.
 
 - [ ] https://jobs.ashbyhq.com/deepgram/f428c615-65e8-4d4d-84dd-ba0da64f1a9b | Deepgram | Marketing & GTM Data Analyst
 
+- [ ] https://jobs.ashbyhq.com/supabase/950e8ffc-79a5-4626-b1dd-115fcbcddad0 | Supabase | Data API Engineer
+
 ## Procesadas
 
 <!-- Evaluated jobs are moved here -->

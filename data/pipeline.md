@@ -126,6 +126,8 @@ Run `/career-ops pipeline` to process pending items.
 
 - [ ] https://jobs.ashbyhq.com/supabase/950e8ffc-79a5-4626-b1dd-115fcbcddad0 | Supabase | Data API Engineer
 
+- [ ] https://job-boards.greenhouse.io/anthropic/jobs/5462966008 | Anthropic | Security Data Engineer
+
 ## Procesadas
 
 <!-- Evaluated jobs are moved here -->

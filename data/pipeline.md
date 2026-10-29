@@ -130,6 +130,8 @@ Run `/career-ops pipeline` to process pending items.
 
 - [ ] http://stability.ai/careers?gh_jid=5018185101 | Stability AI | Staff Software Engineer, Data 
 
+- [ ] https://job-boards.greenhouse.io/anthropic/jobs/5419154008 | Anthropic | Staff / Senior Data Center Security Engineer
+
 ## Procesadas
 
 <!-- Evaluated jobs are moved here -->

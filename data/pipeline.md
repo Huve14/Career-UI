@@ -132,6 +132,8 @@ Run `/career-ops pipeline` to process pending items.
 
 - [ ] https://job-boards.greenhouse.io/anthropic/jobs/5419154008 | Anthropic | Staff / Senior Data Center Security Engineer
 
+- [ ] https://jobs.ashbyhq.com/supabase/fb0b563a-e541-43fd-8555-9eb6473aaa11 | Supabase | Software Engineer - AI Tooling Infrastructure
+
 ## Procesadas
 
 <!-- Evaluated jobs are moved here -->

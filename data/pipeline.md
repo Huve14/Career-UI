@@ -134,6 +134,8 @@ Run `/career-ops pipeline` to process pending items.
 
 - [ ] https://jobs.ashbyhq.com/supabase/fb0b563a-e541-43fd-8555-9eb6473aaa11 | Supabase | Software Engineer - AI Tooling Infrastructure
 
+- [ ] https://jobs.ashbyhq.com/supabase/8999613e-cbca-4a00-9516-09681a46749e | Supabase | Billing Support Specialist 
+
 ## Procesadas
 
 <!-- Evaluated jobs are moved here -->

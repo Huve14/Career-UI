@@ -136,6 +136,8 @@ Run `/career-ops pipeline` to process pending items.
 
 - [ ] https://jobs.ashbyhq.com/supabase/8999613e-cbca-4a00-9516-09681a46749e | Supabase | Billing Support Specialist 
 
+- [ ] https://job-boards.greenhouse.io/anthropic/jobs/5454474008 | Anthropic | Data Center Energy Lead
+
 ## Procesadas
 
 <!-- Evaluated jobs are moved here -->

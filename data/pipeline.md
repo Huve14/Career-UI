@@ -138,6 +138,15 @@ Run `/career-ops pipeline` to process pending items.
 
 - [ ] https://job-boards.greenhouse.io/anthropic/jobs/5454474008 | Anthropic | Data Center Energy Lead
 
+- [ ] https://jobs.ashbyhq.com/Deepgram/ba60a541-fdf7-44bf-a6bb-0e821f15af54 | Deepgram | Senior Data Scientist, Audio
+- [ ] https://jobs.ashbyhq.com/Deepgram/bf8ea79f-f380-467e-8349-ea1ea8281316 | Deepgram | People AI & Automation Engineer
+- [ ] https://jobs.ashbyhq.com/Deepgram/7ced4c1f-4126-44fe-9cf1-da427a9e4e3e | Deepgram | ML Ops Infrastructure Engineer
+- [ ] https://jobs.ashbyhq.com/Deepgram/ae992d89-1bb3-4bea-ae91-0a07043e9756 | Deepgram | Senior Data Intelligence Engineer
+- [ ] https://jobs.ashbyhq.com/Deepgram/7992391d-a890-41f7-85c8-849e0b878981 | Deepgram | Senior Analytics Engineer - Decision Intelligence
+- [ ] https://jobs.ashbyhq.com/Deepgram/f428c615-65e8-4d4d-84dd-ba0da64f1a9b | Deepgram | Marketing & GTM Data Analyst
+- [ ] https://jobs.ashbyhq.com/ElevenLabs/9aca205e-b2bc-405b-85d6-3d2aadbe49b1 | ElevenLabs | IT Engineer
+- [ ] https://jobs.ashbyhq.com/ElevenLabs/1b90a2b2-1352-458d-b2b7-3900f6e02df5 | ElevenLabs | Mobile Engineer - ElevenMusic
+
 ## Procesadas
 
 <!-- Evaluated jobs are moved here -->

@@ -147,6 +147,9 @@ Run `/career-ops pipeline` to process pending items.
 - [ ] https://jobs.ashbyhq.com/ElevenLabs/9aca205e-b2bc-405b-85d6-3d2aadbe49b1 | ElevenLabs | IT Engineer
 - [ ] https://jobs.ashbyhq.com/ElevenLabs/1b90a2b2-1352-458d-b2b7-3900f6e02df5 | ElevenLabs | Mobile Engineer - ElevenMusic
 
+- [ ] https://coreweave.com/careers/job?4625588006&board=coreweave&gh_jid=4625588006 | Weights & Biases (CoreWeave) | Senior Data Platform Engineer - Weights & Biases 
+- [ ] https://coreweave.com/careers/job?4617013006&board=coreweave&gh_jid=4617013006 | Weights & Biases (CoreWeave) | Staff Software Engineer, Performance- Weights & Biases 
+
 ## Procesadas
 
 <!-- Evaluated jobs are moved here -->

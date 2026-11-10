@@ -150,6 +150,11 @@ Run `/career-ops pipeline` to process pending items.
 - [ ] https://coreweave.com/careers/job?4625588006&board=coreweave&gh_jid=4625588006 | Weights & Biases (CoreWeave) | Senior Data Platform Engineer - Weights & Biases 
 - [ ] https://coreweave.com/careers/job?4617013006&board=coreweave&gh_jid=4617013006 | Weights & Biases (CoreWeave) | Staff Software Engineer, Performance- Weights & Biases 
 
+- [ ] https://job-boards.greenhouse.io/gleanwork/jobs/4735026005 | Glean | Designated Technical Support Engineer - Central/East
+- [ ] https://job-boards.greenhouse.io/gleanwork/jobs/4734007005 | Glean | Designated Technical Support Engineer - West
+- [ ] https://job-boards.greenhouse.io/later/jobs/8792586002 | Later | Influencer Marketing Coordinator (Canada Bilingual French/ English)
+- [ ] https://job-boards.greenhouse.io/celonis/jobs/8190831003?gh_jid=8190831003 | Celonis | Software Engineer - Infrastructure
+
 ## Procesadas
 
 <!-- Evaluated jobs are moved here -->

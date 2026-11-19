@@ -157,6 +157,8 @@ Run `/career-ops pipeline` to process pending items.
 
 - [ ] https://job-boards.eu.greenhouse.io/stabilityai/jobs/5018185101 | Stability AI | Staff Software Engineer, Data 
 
+- [ ] https://job-boards.greenhouse.io/intercom/jobs/8403398 | Intercom | Senior Forward Deployed Data Scientist
+
 ## Procesadas
 
 <!-- Evaluated jobs are moved here -->

@@ -155,6 +155,8 @@ Run `/career-ops pipeline` to process pending items.
 - [ ] https://job-boards.greenhouse.io/later/jobs/8792586002 | Later | Influencer Marketing Coordinator (Canada Bilingual French/ English)
 - [ ] https://job-boards.greenhouse.io/celonis/jobs/8190831003?gh_jid=8190831003 | Celonis | Software Engineer - Infrastructure
 
+- [ ] https://job-boards.eu.greenhouse.io/stabilityai/jobs/5018185101 | Stability AI | Staff Software Engineer, Data 
+
 ## Procesadas
 
 <!-- Evaluated jobs are moved here -->

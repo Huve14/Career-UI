@@ -159,6 +159,8 @@ Run `/career-ops pipeline` to process pending items.
 
 - [ ] https://job-boards.greenhouse.io/intercom/jobs/8403398 | Intercom | Senior Forward Deployed Data Scientist
 
+- [ ] https://jobs.ashbyhq.com/supabase/e1880633-5d58-4f38-833e-1bdef24d0bf9 | Supabase | Platform Engineer - Database 
+
 ## Procesadas
 
 <!-- Evaluated jobs are moved here -->
